@@ -1,0 +1,124 @@
+---
+title: "Using the CLI"
+sidebarTitle: "CLI"
+description: "Install and use the Descript CLI for importing media, running agent edits, and managing API operations from the command line."
+icon: "terminal"
+---
+
+If you want to test the API without writing code, the CLI is the fastest way. It wraps the API into interactive commands — configure your key, import a file, run an agent edit, and the CLI handles job polling so you're not writing status-checking loops yourself.
+
+## Requirements
+
+**Node.js 24 or higher** is required. Download it from [nodejs.org](https://nodejs.org/).
+
+## Install
+
+```bash
+npm install -g @descript/platform-cli@latest
+```
+
+## Configure
+
+Set your API key:
+
+```bash
+descript-api config set api-key
+```
+
+This stores your token locally. You'll need an API token from your Descript account settings — see [Authentication](/getting-started/authentication) for setup instructions.
+
+## Commands
+
+### Import media
+
+Create a project and import media from a URL:
+
+```bash
+descript-api import --name "My First Project" --media "https://example.com/video.mp4"
+```
+
+The CLI automatically polls for job completion and reports when the import is finished.
+
+### Agent edit
+
+Run an AI-powered edit on an existing project:
+
+```bash
+descript-api agent --project-id YOUR_PROJECT_ID \
+  --prompt "Remove filler words and add Studio Sound"
+```
+
+### Create from prompt
+
+Generate a new project entirely from a text prompt:
+
+```bash
+descript-api edit --new --prompt "Write a script about how to make great coffee"
+```
+
+### Check help
+
+View all available commands and options:
+
+```bash
+descript-api help
+```
+
+## File handling
+
+The CLI has some conveniences that the raw API doesn't:
+
+- **Google Drive and Dropbox links**: The CLI automatically converts share links to direct download URLs. You can pass a Google Drive or Dropbox share link directly to `--media`.
+- **Multiple files**: Pass multiple `--media` flags to import several files at once.
+
+<Info>
+**Local file upload** is not currently supported. Media must be hosted at a publicly accessible URL.
+</Info>
+
+## Profile management
+
+If you work across multiple environments (production, staging) or multiple Drives, you can create named profiles:
+
+```bash
+# Set up a production profile
+descript-api config set api-key --profile production
+
+# Use a specific profile
+descript-api import --profile production --name "Video" --media "https://..."
+```
+
+Each profile stores its own API token, so you can switch between Drives or environments without reconfiguring.
+
+## Example workflows
+
+### Import and edit in sequence
+
+```bash
+# Import a video
+descript-api import --name "Weekly Update" \
+  --media "https://example.com/recording.mp4"
+
+# The CLI prints the project ID when import completes
+# Use it to run an agent edit
+descript-api agent --project-id PROJECT_ID \
+  --prompt "Remove filler words, add Studio Sound, and generate captions"
+```
+
+### Batch import
+
+```bash
+# Import multiple files into one project
+descript-api import --name "Q2 Interviews" \
+  --media "https://example.com/interview1.mp4" \
+  --media "https://example.com/interview2.mp4" \
+  --media "https://example.com/interview3.mp4"
+```
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `command not found: descript-api` | Make sure Node.js 24+ is installed and `npm install -g` completed without errors |
+| `401 Unauthorized` | Run `descript-api config set api-key` and enter a valid token |
+| `403 Forbidden` | Your token is scoped to a different Drive than the project you're accessing |
+| Import hangs | Check that the media URL is publicly accessible and supports HTTP Range requests |

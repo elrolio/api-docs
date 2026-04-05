@@ -1,0 +1,136 @@
+---
+title: "Error Codes"
+sidebarTitle: "Error Codes"
+description: "HTTP status codes, error responses, and troubleshooting guidance for the Descript API."
+icon: "circle-xmark"
+---
+
+The API uses standard HTTP status codes. Successful requests return `2xx`, client errors return `4xx`, and server errors return `5xx`.
+
+## Success codes
+
+| Code | Meaning | When |
+|------|---------|------|
+| `200` | OK | Successful GET request (job status, job list) |
+| `201` | Created | Successful POST request (new import or agent job created) |
+
+## Client error codes
+
+### 400 Bad Request
+
+The request body is malformed or missing required fields.
+
+```json
+{
+  "error": "Bad Request",
+  "message": "project_name or project_id is required"
+}
+```
+
+**Common causes:**
+- Missing required fields (`project_name` for imports, `prompt` for agent edits)
+- Invalid JSON in the request body
+- Invalid field values or types
+
+### 401 Unauthorized
+
+The API token is missing, invalid, or expired.
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid or missing API token"
+}
+```
+
+**Fix:** Check that your `Authorization` header is formatted as `Bearer YOUR_TOKEN` and the token is valid. Generate a new token in [Descript settings](https://www.descript.com/settings/api-tokens) if needed.
+
+### 402 Payment Required
+
+Your account has insufficient media minutes or AI credits.
+
+```json
+{
+  "error": "Payment Required",
+  "message": "Insufficient AI credits"
+}
+```
+
+**Fix:** Check your credit balance in Descript's billing settings. Purchase additional credits or wait for your monthly allocation to refresh.
+
+### 403 Forbidden
+
+The token doesn't have access to the requested resource. Usually a Drive scoping issue.
+
+```json
+{
+  "error": "Forbidden",
+  "message": "Token does not have access to this project"
+}
+```
+
+**Common causes:**
+- The API token is scoped to Drive A, but the project is in Drive B
+- Attempting to edit another team member's project in a different Drive
+- The project has been moved or deleted
+
+**Fix:** Create a token scoped to the correct Drive, or verify the project is in the Drive your token is associated with.
+
+### 404 Not Found
+
+The requested resource doesn't exist.
+
+```json
+{
+  "error": "Not Found",
+  "message": "Job not found"
+}
+```
+
+**Common causes:**
+- Invalid `job_id` or `project_id`
+- Job has expired (older than 30 days)
+- Project has been deleted
+
+### 429 Too Many Requests
+
+You've exceeded the rate limit.
+
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded"
+}
+```
+
+**Response headers:**
+
+| Header | Description |
+|--------|-------------|
+| `Retry-After` | Seconds to wait before retrying |
+| `X-RateLimit-Remaining` | Requests remaining in the current window |
+| `X-RateLimit-Consumed` | Requests consumed in the current window |
+
+**Fix:** Wait for the duration specified in `Retry-After` before retrying. Implement exponential backoff in production code. Don't retry immediately — this can compound the issue.
+
+## Server error codes
+
+### 500 Internal Server Error
+
+An unexpected error on Descript's servers.
+
+**Fix:** Retry after a short delay (5-10 seconds). If persistent, check the [Descript status page](https://status.descript.com) and report via Discord.
+
+### 502 Bad Gateway
+
+A transient server issue, occasionally seen during agent edit processing.
+
+**Fix:** Retry the request after a 10-30 second delay. This is usually resolved automatically.
+
+## Error handling best practices
+
+1. **Always check the response status code** before parsing the body
+2. **Implement retry logic** for 429 and 5xx errors with exponential backoff
+3. **Log error responses** including the full response body for debugging
+4. **Don't retry 4xx errors** (except 429) — they indicate a problem with the request that won't change on retry
+5. **Use the `Retry-After` header** on 429 responses instead of a fixed delay

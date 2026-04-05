@@ -1,0 +1,10 @@
+Poll the job status endpoint until `job_state` is `"stopped"`:
+
+```bash
+curl https://descriptapi.com/v1/jobs/YOUR_JOB_ID \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+**Recommended polling interval**: 5-10 seconds. Don't poll more than once every 3 seconds.
+
+Alternatively, pass a `callback_url` in your request to get notified via webhook when the job completes. See [Working with Jobs](/guides/working-with-jobs#webhook-callbacks).

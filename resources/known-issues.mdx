@@ -1,0 +1,63 @@
+---
+title: "Known Issues & Limitations"
+sidebarTitle: "Known Issues"
+description: "Current API limitations, known issues, and workarounds. Updated as the API evolves."
+icon: "triangle-exclamation"
+---
+
+The API is in open beta. This page tracks current limitations and known issues. It's updated as capabilities expand — check back for changes or follow the [Changelog](/resources/changelog).
+
+## General limitations
+
+| Limitation | Details |
+|-----------|---------|
+| **No export endpoint** | After editing via the API, open the project in Descript to export. An export endpoint is under development. |
+| **No local file upload** | Media must be hosted at a public or pre-signed URL. Direct file uploads from your computer aren't supported yet. |
+| **File size limit** | Imported files are limited to 1GB. |
+| **Job history retention** | Job status records are available for 30 days after creation. Projects themselves are unaffected. |
+
+## Import API
+
+| Issue | Details |
+|-------|---------|
+| **No import into existing projects** | You can only import media into new projects. Adding media to an existing project is not yet supported. |
+| **No explicit transcription language** | The transcription engine auto-detects language. You can't manually specify it. |
+| **No explicit FPS setting** | Composition frame rate is set automatically. Manual FPS configuration is not available. |
+
+## Agent API
+
+| Issue | Details |
+|-------|---------|
+| **May report success prematurely** | Agent edits may return `"status": "success"` while some operations are still processing. If edits look incomplete, wait a minute and check the project in Descript. |
+| **Visual operations are approximate** | Edits that involve placing or moving visual elements (layers, images, text overlays) may not produce visually polished results. The agent is strongest with audio operations and content editing. |
+| **No composition targeting** | The `composition_id` parameter is accepted but not functional. Agent edits apply to the entire project. |
+| **One-shot prompts only** | The API doesn't support multi-turn conversation. Frame your edits as complete, self-contained instructions. |
+
+## Permissions & access
+
+| Issue | Details |
+|-------|---------|
+| **Cross-drive 403 errors** | Tokens are scoped to a single Drive. Attempting to edit a project in a different Drive returns 403, even if your account has access to both Drives. |
+| **Team access setting** | Setting team access levels for projects created via the API is not yet supported. |
+| **Occasional 502 errors** | Agent edit jobs may intermittently return 502 Bad Gateway. These are transient — retry the request after a short delay. |
+
+## File handling
+
+| Issue | Details |
+|-------|---------|
+| **Google Drive share links** | The direct API doesn't accept Google Drive share links. Convert to direct download format or use the CLI (which converts automatically). See [Common Workflows](/guides/common-workflows#google-drive-and-dropbox-files). |
+| **Dropbox share links** | Same as Google Drive — convert share links to direct download URLs, or use the CLI. |
+| **Pre-signed URL expiration** | Media URLs must remain valid for 12-48 hours during processing. Use pre-signed URLs with appropriate expiration times. |
+
+## Jobs API
+
+| Issue | Details |
+|-------|---------|
+| **No running jobs filter** | You can't filter the jobs list to show only currently running jobs. |
+
+## Reporting issues
+
+Found something not listed here? Report it through:
+
+- [Descript API Discord](https://discord.gg/descript) — Community discussion and direct feedback to the team
+- Your Descript account's support channel — For account-specific issues

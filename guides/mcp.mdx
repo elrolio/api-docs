@@ -1,0 +1,119 @@
+---
+title: "Using the MCP Server"
+sidebarTitle: "MCP / AI Assistants"
+description: "Connect Descript to Claude, Cursor, and other AI assistants using the MCP server. Edit video through conversation."
+icon: "message-bot"
+---
+
+This is the simplest way to use the Descript API. Connect your AI assistant, then describe what you want in plain English. "Remove filler words and add captions." "Create a highlight reel from my latest recording." The assistant calls Descript on your behalf — no API token, no code, no curl.
+
+The MCP connector handles authentication through OAuth. You connect once, then it just works.
+
+## Claude Desktop
+
+The fastest way to get started. Claude Desktop has a built-in connector for Descript.
+
+<Steps>
+  <Step title="Open connector settings">
+    In Claude Desktop, click **Customize** in the sidebar. Scroll down to **Connectors**.
+  </Step>
+  <Step title="Add Descript">
+    Find **Descript** in the connector list and click **Connect**.
+  </Step>
+  <Step title="Authorize">
+    A browser window opens for OAuth sign-in. Sign in to your Descript account and click **Allow**.
+  </Step>
+  <Step title="Set permissions (recommended)">
+    For the best experience, set Descript's tool permissions to **Always allow**. This prevents Claude from asking for confirmation on every action.
+  </Step>
+</Steps>
+
+Once connected, you can start editing video by typing prompts directly in Claude.
+
+## Claude Code
+
+Add the Descript MCP server with a single command:
+
+```bash
+claude mcp add descript --transport http https://api.descript.com/v2/mcp
+```
+
+After adding, Claude Code can import media, run agent edits, and check job status — all from your terminal.
+
+## Cursor
+
+Add the MCP server URL in Cursor's settings:
+
+```
+https://api.descript.com/v2/mcp
+```
+
+Refer to [Cursor's MCP documentation](https://docs.cursor.com/context/model-context-protocol) for configuration details.
+
+## Other MCP-compatible tools
+
+Any tool that supports the Model Context Protocol can connect to Descript using the hosted MCP URL:
+
+```
+https://api.descript.com/v2/mcp
+```
+
+## Example prompts
+
+Once connected, try these prompts to get started:
+
+<AccordionGroup>
+  <Accordion title="Import and process media">
+    - "Create a Descript project from this video: [URL]"
+    - "Import this YouTube video into a new project called 'Weekly Update'"
+    - "Create a project with these three video files: [URL1], [URL2], [URL3]"
+  </Accordion>
+  <Accordion title="Edit existing projects">
+    - "Add Studio Sound and captions to my latest project"
+    - "Remove all filler words from the project"
+    - "Make a 30-second highlight reel from my project"
+    - "Translate my project to Spanish"
+  </Accordion>
+  <Accordion title="Create from scratch">
+    - "Write a script about how to make great coffee and create a video from it"
+    - "Create a 40-second promotional ad copying the style of this YouTube video: [URL]"
+    - "Make a 5-minute podcast explaining the features we released this week"
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+**Be specific.** One-shot prompts work best with the API. Instead of "make it better," try "remove filler words, add Studio Sound, and generate captions." The more detail you provide, the better the result.
+</Tip>
+
+## What works well
+
+The sweet spot is specific, complete instructions. Tell the agent exactly what you want in one shot.
+
+- **Feature-specific requests**: "Add Studio Sound", "Remove filler words", "Add captions" — precise and reliable
+- **Multi-step edits in one prompt**: "Remove filler words, enhance audio, and add captions" handles all three in a single request
+- **Web-aware editing**: Claude can browse URLs you mention, then use that context when editing. "Copy the style of this YouTube video" actually works — Claude analyzes the video first, then tells Descript what to do
+- **Creative generation**: "Write a script about X and create a video from it" combines Claude's writing with Descript's production. The result is a real project you can open and refine
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Connector not found in Claude Desktop">
+    Verify the connector is enabled in Claude Desktop settings. If it doesn't appear, restart the Claude app completely and check again. This can happen intermittently after updates.
+  </Accordion>
+  <Accordion title="OAuth authorization fails">
+    Make sure you're signing in with the same Descript account that has API access. If the OAuth window doesn't open, check your browser's pop-up blocker settings.
+  </Accordion>
+  <Accordion title="Edits don't look right">
+    Re-run the same edit directly in the Descript app to isolate whether the issue is with the API request or the Underlord model itself. If the result is the same in-app, it's a model limitation, not an API issue.
+  </Accordion>
+  <Accordion title="Can't find my project">
+    The MCP connection uses OAuth tied to your account. Make sure the project is in a Drive your account has access to. Projects in other team members' personal Drives won't be accessible.
+  </Accordion>
+</AccordionGroup>
+
+## Limitations
+
+- **No local file upload**: Media must be hosted at a public or pre-signed URL. You can't upload files directly from your computer through the MCP server.
+- **No export**: After editing, open the project in Descript to export. There's no export endpoint yet.
+- **Visual operations**: Edits involving precise visual placement (moving layers, positioning elements) may not produce visually polished results.
+- **One-shot prompts**: The API doesn't support multi-turn conversation. Frame your edits as complete instructions with all necessary context.

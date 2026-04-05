@@ -1,0 +1,185 @@
+---
+title: "Quickstart"
+sidebarTitle: "Quickstart"
+description: "Go from zero to your first video edit in under 5 minutes. Choose your path: AI assistant, CLI, or direct API."
+---
+
+Five minutes. That's all it takes to import a video, run an AI edit, and see the result in Descript. Pick the path that matches how you work.
+
+<Tabs>
+  <Tab title="AI Assistant (fastest)">
+    The MCP connector lets you edit video by talking to Claude, Cursor, or other AI assistants. No API token needed.
+
+    <Steps>
+      <Step title="Connect Descript to Claude">
+        In Claude Desktop, click **Customize** > **Connectors** > find **Descript** > click **Connect**. Authorize with your Descript account.
+
+        For Claude Code, run:
+        ```bash
+        claude mcp add descript --transport http https://api.descript.com/v2/mcp
+        ```
+      </Step>
+      <Step title="Import a video">
+        Ask Claude:
+        ```
+        Create a Descript project from this video:
+        https://test-files.descriptapi.com/demo-video.mp4
+        ```
+        Claude calls the API and creates the project for you.
+      </Step>
+      <Step title="Edit with AI">
+        Ask Claude:
+        ```
+        Add Studio Sound and captions to my latest project
+        ```
+        The agent applies the edits and tells you when it's done.
+      </Step>
+      <Step title="Review in Descript">
+        Claude provides a project link. Open it in Descript to review the result and export.
+      </Step>
+    </Steps>
+
+    <Card title="Full MCP guide" icon="arrow-right" href="/guides/mcp">
+      Setup for Cursor, other agents, example prompts, and troubleshooting.
+    </Card>
+  </Tab>
+
+  <Tab title="CLI">
+    The CLI gives you interactive commands with built-in job polling. Good for testing and scripting.
+
+    <Steps>
+      <Step title="Install the CLI">
+        ```bash
+        npm install -g @descript/platform-cli@latest
+        ```
+        Requires Node.js 24+.
+      </Step>
+      <Step title="Configure your API key">
+        ```bash
+        descript-api config set api-key
+        ```
+        Enter the API token from your [Descript settings](https://www.descript.com/settings/api-tokens). See [Authentication](/getting-started/authentication) if you haven't created one yet.
+      </Step>
+      <Step title="Import a video">
+        ```bash
+        descript-api import \
+          --name "My First Project" \
+          --media "https://test-files.descriptapi.com/demo-video.mp4"
+        ```
+        The CLI polls for completion automatically and prints the project ID when done.
+      </Step>
+      <Step title="Edit with AI">
+        ```bash
+        descript-api agent \
+          --project-id YOUR_PROJECT_ID \
+          --prompt "Remove filler words and add Studio Sound"
+        ```
+      </Step>
+      <Step title="Review in Descript">
+        Open the project URL printed by the CLI to review and export in Descript.
+      </Step>
+    </Steps>
+
+    <Card title="Full CLI guide" icon="arrow-right" href="/guides/cli">
+      All commands, profiles, file handling, and batch operations.
+    </Card>
+  </Tab>
+
+  <Tab title="REST API">
+    Direct HTTP access for building production workflows and integrations.
+
+    <Steps>
+      <Step title="Get an API token">
+        Create a token in your [Descript settings](https://www.descript.com/settings/api-tokens). See [Authentication](/getting-started/authentication) for details.
+      </Step>
+      <Step title="Import a video">
+        ```bash
+        curl -X POST https://descriptapi.com/v1/jobs/import/project_media \
+          -H "Authorization: Bearer YOUR_API_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "project_name": "My First Video",
+            "add_media": {
+              "demo.mp4": {
+                "url": "https://test-files.descriptapi.com/demo-video.mp4"
+              }
+            },
+            "add_compositions": [
+              {
+                "name": "Demo Video",
+                "clips": [
+                  { "media": "demo.mp4" }
+                ]
+              }
+            ]
+          }'
+        ```
+
+        Response:
+        ```json
+        {
+          "job_id": "project-media-import-9d635d5b",
+          "drive_id": "c9c5c47e",
+          "project_id": "e2f89ce6",
+          "project_url": "https://web.descript.com/e2f89ce6"
+        }
+        ```
+      </Step>
+      <Step title="Wait for import to complete">
+        Poll the job status endpoint until `job_state` is `"stopped"`:
+        ```bash
+        curl https://descriptapi.com/v1/jobs/YOUR_JOB_ID \
+          -H "Authorization: Bearer YOUR_API_TOKEN"
+        ```
+
+        Or pass `callback_url` in the import request to get a webhook notification instead.
+      </Step>
+      <Step title="Edit with AI">
+        ```bash
+        curl -X POST https://descriptapi.com/v1/jobs/agent \
+          -H "Authorization: Bearer YOUR_API_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "project_id": "YOUR_PROJECT_ID",
+            "prompt": "Remove filler words and add Studio Sound"
+          }'
+        ```
+      </Step>
+      <Step title="Check the result">
+        Poll the job status. When done, the `result.agent_response` field contains a summary of what the agent did:
+        ```json
+        {
+          "job_state": "stopped",
+          "result": {
+            "status": "success",
+            "agent_response": "Done! I removed filler words and applied Studio Sound.",
+            "project_changed": true,
+            "ai_credits_used": 32
+          }
+        }
+        ```
+        Open the `project_url` in Descript to review and export.
+      </Step>
+    </Steps>
+
+    <Card title="API Reference" icon="arrow-right" href="/api-reference">
+      Full endpoint documentation with request/response schemas.
+    </Card>
+  </Tab>
+</Tabs>
+
+## What just happened
+
+In each path above, you:
+
+1. **Imported media** — Descript created a project, downloaded the video, transcribed it, and set up a composition
+2. **Ran an agent edit** — The AI agent analyzed the content and applied the requested changes
+3. **Got a project link** — The finished project is ready to review and export in Descript
+
+Both import and agent operations are asynchronous **jobs**. Learn more about how jobs work in [Working with Jobs](/guides/working-with-jobs).
+
+## Next steps
+
+- [Common Workflows](/guides/common-workflows) — Patterns for batch processing, webhook callbacks, and multi-step edits
+- [API Reference](/api-reference) — Full endpoint documentation
+- [Known Issues](/resources/known-issues) — Current limitations and workarounds

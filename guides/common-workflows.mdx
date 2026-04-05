@@ -1,0 +1,210 @@
+---
+title: "Common Workflows"
+sidebarTitle: "Common Workflows"
+description: "Patterns for import-to-edit pipelines, batch processing, webhook callbacks, and handling Google Drive and Dropbox files."
+icon: "route"
+---
+
+Nearly every API workflow looks the same: get media in, let the AI do its thing, check the result. This page shows you the patterns — from a single import-and-edit to batch-processing a hundred videos overnight.
+
+## The basic pipeline
+
+```
+Import media → Poll for completion → Agent edit → Poll for completion → Review in Descript
+```
+
+### Step by step
+
+<Steps>
+  <Step title="Import media into a new project">
+    ```bash
+    curl -X POST https://descriptapi.com/v1/jobs/import/project_media \
+      -H "Authorization: Bearer YOUR_API_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "project_name": "Weekly Recap",
+        "add_media": {
+          "recording.mp4": {
+            "url": "https://example.com/recording.mp4"
+          }
+        },
+        "add_compositions": [
+          {
+            "name": "Main",
+            "clips": [{ "media": "recording.mp4" }]
+          }
+        ]
+      }'
+    ```
+  </Step>
+  <Step title="Wait for import to complete">
+    Poll the job status endpoint, or use a `callback_url` in the request (see [webhook callbacks](#webhook-callbacks) below).
+
+    ```bash
+    # Poll every 10 seconds until job_state is "stopped"
+    curl https://descriptapi.com/v1/jobs/YOUR_JOB_ID \
+      -H "Authorization: Bearer YOUR_API_TOKEN"
+    ```
+  </Step>
+  <Step title="Run an agent edit">
+    Use the `project_id` from the import response:
+
+    ```bash
+    curl -X POST https://descriptapi.com/v1/jobs/agent \
+      -H "Authorization: Bearer YOUR_API_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "project_id": "YOUR_PROJECT_ID",
+        "prompt": "Remove all filler words, apply Studio Sound, and add captions"
+      }'
+    ```
+  </Step>
+  <Step title="Wait for agent to finish">
+    Poll the new job ID. When done, `result.agent_response` describes what the agent did.
+  </Step>
+  <Step title="Review and export">
+    Open the `project_url` in Descript to review the AI's edits and export the final output.
+  </Step>
+</Steps>
+
+<Info>
+There's no export endpoint yet. All workflows currently end with "open in Descript to export." This is a known limitation being actively developed.
+</Info>
+
+## Webhook callbacks
+
+Instead of polling, pass a `callback_url` in your import or agent request. Descript sends a POST request to that URL when the job completes, with the same payload you'd get from the status endpoint.
+
+```json
+{
+  "project_name": "Weekly Recap",
+  "callback_url": "https://your-server.com/webhooks/descript",
+  "add_media": {
+    "recording.mp4": {
+      "url": "https://example.com/recording.mp4"
+    }
+  }
+}
+```
+
+This is the recommended approach for production systems. Polling works for testing and simple scripts, but callbacks are more efficient and reliable at scale.
+
+## Batch processing
+
+### Multiple files into one project
+
+Import several media files into a single project by adding multiple entries to `add_media`:
+
+```json
+{
+  "project_name": "Q2 Customer Interviews",
+  "add_media": {
+    "interview1.mp4": { "url": "https://example.com/interview1.mp4" },
+    "interview2.mp4": { "url": "https://example.com/interview2.mp4" },
+    "interview3.mp4": { "url": "https://example.com/interview3.mp4" }
+  },
+  "add_compositions": [
+    {
+      "name": "All Interviews",
+      "clips": [
+        { "media": "interview1.mp4" },
+        { "media": "interview2.mp4" },
+        { "media": "interview3.mp4" }
+      ]
+    }
+  ]
+}
+```
+
+### Multiple projects from a list
+
+For processing many files independently, make separate import requests for each and track the jobs:
+
+```python
+import requests
+import time
+
+API_TOKEN = "YOUR_API_TOKEN"
+BASE_URL = "https://descriptapi.com/v1"
+HEADERS = {
+    "Authorization": f"Bearer {API_TOKEN}",
+    "Content-Type": "application/json"
+}
+
+videos = [
+    ("Episode 1", "https://example.com/ep1.mp4"),
+    ("Episode 2", "https://example.com/ep2.mp4"),
+    ("Episode 3", "https://example.com/ep3.mp4"),
+]
+
+# Start all imports
+jobs = []
+for name, url in videos:
+    resp = requests.post(f"{BASE_URL}/jobs/import/project_media", headers=HEADERS, json={
+        "project_name": name,
+        "add_media": {"video.mp4": {"url": url}},
+        "add_compositions": [{"name": "Main", "clips": [{"media": "video.mp4"}]}]
+    })
+    jobs.append(resp.json())
+    print(f"Started import for {name}: {resp.json()['job_id']}")
+
+# Poll for completion
+for job in jobs:
+    while True:
+        status = requests.get(f"{BASE_URL}/jobs/{job['job_id']}", headers=HEADERS).json()
+        if status["job_state"] == "stopped":
+            print(f"Import complete: {job['job_id']}")
+            break
+        time.sleep(10)
+
+# Run agent edits on all completed projects
+for job in jobs:
+    resp = requests.post(f"{BASE_URL}/jobs/agent", headers=HEADERS, json={
+        "project_id": job["project_id"],
+        "prompt": "Remove filler words, add Studio Sound, and generate captions"
+    })
+    print(f"Started edit for {job['project_id']}: {resp.json()['job_id']}")
+```
+
+## Google Drive and Dropbox files
+
+The API needs direct download URLs, not share links. How to handle this depends on which tool you're using.
+
+| Tool | Handling |
+|------|----------|
+| **CLI** | Automatically converts Google Drive and Dropbox share links to direct download URLs. Just pass the share link. |
+| **Zapier** | Use the **File** field instead of Media URL. Zapier handles the conversion. |
+| **Direct API** | You must convert share links to direct download URLs yourself. Google Drive share links and Dropbox share links won't work as-is. |
+
+### Converting Google Drive links
+
+Replace the share link format with the direct download format:
+
+```
+# Share link (won't work)
+https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+
+# Direct download (use this)
+https://drive.google.com/uc?export=download&id=FILE_ID
+```
+
+### Converting Dropbox links
+
+Change `dl=0` to `dl=1` in the share link:
+
+```
+# Share link (won't work)
+https://www.dropbox.com/s/abc123/video.mp4?dl=0
+
+# Direct download (use this)
+https://www.dropbox.com/s/abc123/video.mp4?dl=1
+```
+
+## Media URL requirements
+
+When using the direct API, media URLs must:
+
+- Be publicly accessible (or pre-signed) by Descript's servers
+- Support HTTP Range requests for large files
+- Remain valid for 12-48 hours (use pre-signed URLs with appropriate expiration)
+- Be under 1GB per file

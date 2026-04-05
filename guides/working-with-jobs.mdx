@@ -1,0 +1,216 @@
+---
+title: "Working with Jobs"
+sidebarTitle: "Working with Jobs"
+description: "Understand the async job model, polling patterns, job states, webhook callbacks, and job retention."
+icon: "spinner-third"
+---
+
+Video processing takes time. You're not going to get a response in 200ms. So the API is built around **jobs** — you submit a request, get back a `job_id`, and either poll for the result or hand off a callback URL and move on.
+
+## Job lifecycle
+
+```
+Created → Running → Stopped (success or failure)
+                  → Cancelled (if you cancel it)
+                  → Failed (if something goes wrong)
+```
+
+When you submit an import or agent request, the API returns immediately with a `job_id` and basic metadata. The actual processing happens in the background.
+
+## Job types
+
+| Type | Created by | Typical duration |
+|------|-----------|-----------------|
+| `import/project_media` | `POST /jobs/import/project_media` | 30s - 5min depending on file size |
+| `agent` | `POST /jobs/agent` | 30s - 3min depending on edit complexity |
+
+## Checking job status
+
+### Polling
+
+Query the job status endpoint with your `job_id`:
+
+```bash
+curl https://descriptapi.com/v1/jobs/YOUR_JOB_ID \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+**Recommended polling interval**: Start at 5 seconds, increase to 10-15 seconds for longer jobs. Don't poll more frequently than every 3 seconds.
+
+### Response states
+
+<CodeGroup>
+```json Running
+{
+  "job_id": "project-media-import-9d635d5b",
+  "job_type": "import/project_media",
+  "job_state": "running",
+  "project_id": "e2f89ce6",
+  "project_url": "https://web.descript.com/e2f89ce6"
+}
+```
+
+```json Running with progress
+{
+  "job_id": "project-media-import-9d635d5b",
+  "job_type": "import/project_media",
+  "job_state": "running",
+  "project_id": "e2f89ce6",
+  "project_url": "https://web.descript.com/e2f89ce6",
+  "progress": {
+    "percent": 45
+  }
+}
+```
+
+```json Completed (import)
+{
+  "job_id": "project-media-import-9d635d5b",
+  "job_type": "import/project_media",
+  "job_state": "stopped",
+  "project_id": "e2f89ce6",
+  "project_url": "https://web.descript.com/e2f89ce6",
+  "result": {
+    "status": "success",
+    "media_status": {
+      "video.mp4": {
+        "status": "success",
+        "duration_seconds": 69.477006
+      }
+    },
+    "created_compositions": [
+      { "id": "f8e5088a-4d53-4aab-9d4f-c6624b7d7622", "name": "Main" }
+    ]
+  }
+}
+```
+
+```json Completed (agent)
+{
+  "job_id": "project-agent-edit-e2f89ce6",
+  "job_type": "agent",
+  "job_state": "stopped",
+  "project_id": "e2f89ce6",
+  "project_url": "https://web.descript.com/e2f89ce6",
+  "result": {
+    "status": "success",
+    "agent_response": "Done! I removed filler words and applied Studio Sound.",
+    "project_changed": true,
+    "media_seconds_used": 0,
+    "ai_credits_used": 32
+  }
+}
+```
+
+```json Failed
+{
+  "job_id": "project-media-import-9d635d5b",
+  "job_type": "import/project_media",
+  "job_state": "stopped",
+  "result": {
+    "status": "failure",
+    "error": "Could not download media from the provided URL"
+  }
+}
+```
+
+```json Cancelled
+{
+  "job_id": "project-media-import-9d635d5b",
+  "job_type": "import/project_media",
+  "job_state": "cancelled"
+}
+```
+</CodeGroup>
+
+## Webhook callbacks
+
+Instead of polling, pass a `callback_url` when creating a job. Descript sends a POST request to that URL when the job finishes, with the same payload as the status endpoint.
+
+```bash
+curl -X POST https://descriptapi.com/v1/jobs/import/project_media \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_name": "My Video",
+    "callback_url": "https://your-server.com/webhooks/descript",
+    "add_media": {
+      "video.mp4": { "url": "https://example.com/video.mp4" }
+    }
+  }'
+```
+
+<Tip>
+Use webhook callbacks for production systems. Polling is fine for development and testing, but callbacks avoid unnecessary API calls and respond faster.
+</Tip>
+
+## Listing jobs
+
+Retrieve recent jobs with optional filters:
+
+```bash
+# List recent jobs
+curl "https://descriptapi.com/v1/jobs" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+
+# Filter by project
+curl "https://descriptapi.com/v1/jobs?project_id=YOUR_PROJECT_ID" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+
+# Filter by type
+curl "https://descriptapi.com/v1/jobs?type=agent" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+
+# Filter by date range
+curl "https://descriptapi.com/v1/jobs?created_after=2026-04-01T00:00:00Z&created_before=2026-04-07T00:00:00Z" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+Results are paginated. Use the `cursor` value from the response to get the next page:
+
+```bash
+curl "https://descriptapi.com/v1/jobs?cursor=CURSOR_VALUE&limit=50" \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+Default limit is 20 jobs per page (max 100). Default time range is the last 7 days.
+
+## Cancelling jobs
+
+Cancel a running job with a DELETE request:
+
+```bash
+curl -X DELETE https://descriptapi.com/v1/jobs/YOUR_JOB_ID \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+Cancelled jobs stop processing immediately. Any partial work (e.g., a partially imported project) remains in Descript but may be incomplete.
+
+## Job retention
+
+Jobs are retained for **30 days**. After that, the job metadata is no longer accessible through the API. The Descript projects created by those jobs are unaffected — only the job status records expire.
+
+## Handling partial success
+
+Import jobs with multiple media files can partially succeed. Check `media_status` for each file:
+
+```json
+{
+  "result": {
+    "status": "partial",
+    "media_status": {
+      "video1.mp4": { "status": "success", "duration_seconds": 120.5 },
+      "video2.mp4": { "status": "failure", "error": "URL not accessible" }
+    }
+  }
+}
+```
+
+Agent edits may also report success while some operations are still processing internally. If the result doesn't look right, wait a minute and check the project in Descript — some visual updates take a moment to propagate.
+
+## Best practices
+
+- **Don't open projects during processing.** Wait for the job to complete before opening in Descript. Making changes while a job is running can cause conflicts.
+- **Use callbacks in production.** Polling works for development but wastes API calls at scale.
+- **Check for partial failures.** Multi-file imports can partially succeed — always check individual file statuses.
+- **Respect rate limits.** Don't poll faster than every 3 seconds. Use exponential backoff if you hit 429 errors.

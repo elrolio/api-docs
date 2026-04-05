@@ -1,0 +1,62 @@
+---
+title: "Glossary"
+sidebarTitle: "Glossary"
+description: "Key terms and concepts used in the Descript API."
+icon: "book"
+---
+
+## API token
+
+A unique key that authenticates your API requests. Created in your Descript account settings under **Settings > API tokens**. Each token is scoped to a single Drive. Treat it like a password — don't share it or commit it to source control.
+
+## Agent
+
+The AI editing system (called Underlord in the Descript app) that processes natural language prompts to edit video projects. The Agent API (`POST /jobs/agent`) accepts a prompt and applies edits to a specified project.
+
+## AI credits
+
+A usage unit consumed when running agent edits. Operations like filler word removal, Studio Sound, captions, and other AI-powered edits each consume credits. Your account's available credits are shown in Descript's billing settings. A `402` error means credits are depleted.
+
+## Callback URL
+
+A webhook endpoint you provide when creating a job. Descript sends a POST request to this URL when the job completes, with the same payload as the job status endpoint. An alternative to polling.
+
+## Composition
+
+A timeline arrangement within a Descript project. A project can have multiple compositions (like scenes in a movie). When importing media, you can specify compositions and which clips go into each. The `composition_id` parameter exists in the API but is not yet functional for agent edits.
+
+## Drive
+
+A Descript workspace that contains projects. API tokens are scoped to a specific Drive. If you work across multiple Drives, you need separate tokens for each.
+
+## Job
+
+Any long-running API operation. Importing media and running agent edits both create jobs. Each job has a unique `job_id`, a `job_type`, and a `job_state` that progresses from `running` to `stopped` (success/failure) or `cancelled`.
+
+## Job state
+
+The current status of a job. Possible values:
+- `running` — The job is in progress
+- `stopped` — The job has finished (check `result.status` for success or failure)
+- `cancelled` — The job was cancelled via `DELETE /jobs/{job_id}`
+- `failed` — The job failed (check `result.error` for details)
+
+## MCP (Model Context Protocol)
+
+An open standard for connecting AI assistants to external tools. Descript's MCP server lets AI tools like Claude and Cursor call the Descript API on your behalf. The MCP connector uses OAuth for authentication, so no API token is needed.
+
+## Media minutes
+
+A usage unit consumed when importing and processing media. Transcription, audio analysis, and other processing operations use media minutes. Your account's available minutes are shown in Descript's billing settings.
+
+## Project
+
+A container in Descript that holds media files, transcriptions, and compositions. The API creates projects via the Import API and edits them via the Agent API. Each project has a `project_id` and a `project_url` for opening in Descript.
+
+## Studio Sound
+
+Descript's AI audio enhancement feature. Removes background noise, normalizes volume, and improves overall audio quality. Available through the Agent API with prompts like "apply Studio Sound."
+
+## Underlord
+
+The AI editing engine inside Descript. When you use the Agent API, you're interacting with Underlord — the same system available in the Descript app. It handles filler word removal, audio enhancement, captions, speaker detection, translation, and more.

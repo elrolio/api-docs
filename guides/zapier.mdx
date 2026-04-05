@@ -1,0 +1,82 @@
+---
+title: "Using Zapier"
+sidebarTitle: "Zapier"
+description: "Connect Descript to your existing tools with Zapier. Automate media imports and AI edits without writing code."
+icon: "bolt"
+---
+
+A new video lands in your Google Drive folder. Descript imports it, removes filler words, adds captions, and the finished project is waiting when you sit down the next morning. That's what the Zapier integration does — it connects Descript to the tools you already use, no code required.
+
+## Supported actions
+
+The Zapier integration supports two Descript actions:
+
+| Action | What it does |
+|--------|-------------|
+| **Import Media** | Creates a Descript project and imports media from a URL |
+| **Edit with AI** | Runs an Underlord agent edit on a project using a natural language prompt |
+
+## Setup
+
+<Steps>
+  <Step title="Create a Zapier account">
+    Sign up at [zapier.com](https://zapier.com) if you don't already have one.
+  </Step>
+  <Step title="Add the Descript integration">
+    Search for "Descript API" in Zapier's app directory, or use the direct integration link from your Descript settings.
+  </Step>
+  <Step title="Create a Zap">
+    Set up a trigger (the event that starts the automation), then add a Descript action.
+  </Step>
+  <Step title="Connect your Descript account">
+    When prompted, enter your personal API token. See [Authentication](/getting-started/authentication) for how to create one.
+  </Step>
+  <Step title="Configure and test">
+    Fill in the action fields (project name, media URL, or prompt) and run a test to verify it works.
+  </Step>
+</Steps>
+
+<Warning>
+**Each team member needs their own connection.** The Zapier connection uses a personal API token tied to your account. Don't share your connection with your organization. If multiple people need to use Descript Zaps, each person should create their own token and connection.
+</Warning>
+
+## Example Zaps
+
+### Auto-import from Google Drive
+
+Trigger: New file added to a Google Drive folder
+Action: Descript Import Media — creates a project from the new file
+
+### Slack-to-Descript pipeline
+
+Trigger: New message in a Slack channel (with a video URL)
+Action: Descript Import Media — imports the linked video
+Action: Descript Edit with AI — applies standard processing (filler removal, captions, Studio Sound)
+
+### Scheduled batch processing
+
+Trigger: Schedule (daily/weekly)
+Action: Descript Edit with AI — runs edits on recently imported projects
+
+## Multi-step Zaps
+
+When building Zaps with multiple Descript steps (e.g., import then edit), use the same Descript connection for every step. Mixing connections between steps can cause permission errors since tokens are scoped to specific Drives.
+
+## File handling
+
+| Source | What to use |
+|--------|------------|
+| Direct URL | Pass the URL directly to the Media URL field |
+| Google Drive | Use the **File** field, not Media URL. Zapier handles the conversion. |
+| Dropbox | Use the **File** field, not Media URL. Zapier handles the conversion. |
+| Other sources | The media must be at a publicly accessible URL that supports HTTP Range requests |
+
+<Info>
+Files are limited to 1GB. If your source files are larger, consider compressing them first or splitting into segments.
+</Info>
+
+## Limitations
+
+- **No export action**: There's no Zapier action for exporting from Descript yet. After processing, you'll need to open the project in Descript to export.
+- **No job status polling**: Zapier doesn't poll for job completion. If you need to wait for an import to finish before editing, use a delay step or set up a webhook callback.
+- **Token scoping**: Each connection is tied to one Drive. If you work across multiple Drives, you'll need separate connections.

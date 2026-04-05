@@ -1,0 +1,125 @@
+---
+title: "Overview"
+sidebarTitle: "Overview"
+description: "Edit video through code, AI assistants, or no-code automation. The Descript API gives you programmatic access to the same editing engine used by millions of creators."
+---
+
+Everything you do in Descript — removing filler words, enhancing audio, adding captions, creating highlight clips — is now available through code. Or through an AI assistant. Or through a Zapier zap. The editing intelligence stays the same. The interface adapts to you.
+
+## Three ways in
+
+You don't have to choose between power and convenience. The API meets you where you work.
+
+<Columns cols={3}>
+  <Card title="AI Assistants" icon="message-bot" href="/guides/mcp">
+    Tell Claude or Cursor what you want, and it handles the rest. "Remove filler words and add captions" — that's the whole request.
+
+    **Best for**: Conversational editing, quick tasks, exploration.
+  </Card>
+  <Card title="CLI" icon="terminal" href="/guides/cli">
+    Test ideas fast without leaving your terminal. Interactive flows handle setup. Built-in polling tells you when the job's done.
+
+    **Best for**: Quick testing, scripting, local development.
+  </Card>
+  <Card title="REST API" icon="code" href="/api-reference">
+    Full control for production systems. Build the automation your team has been asking for.
+
+    **Best for**: Production automation, custom integrations, platform teams.
+  </Card>
+</Columns>
+
+There's also a [Zapier integration](/guides/zapier) if you want to wire up import and editing workflows without touching code.
+
+## What you can do
+
+### Import media
+
+Create a new project and import media from URLs in a single request. Descript handles transcription, processing, and composition setup automatically.
+
+```bash
+curl -X POST https://descriptapi.com/v1/jobs/import/project_media \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_name": "My Video",
+    "add_media": {
+      "video.mp4": {
+        "url": "https://example.com/video.mp4"
+      }
+    }
+  }'
+```
+
+### Edit with AI
+
+Use natural language prompts to edit any project. The Agent API accepts the same kinds of instructions you'd give Underlord in the app.
+
+```bash
+curl -X POST https://descriptapi.com/v1/jobs/agent \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_id": "YOUR_PROJECT_ID",
+    "prompt": "Remove filler words, add Studio Sound, and add captions"
+  }'
+```
+
+The agent can:
+- Apply Studio Sound for audio enhancement
+- Remove filler words
+- Detect and label speakers
+- Add captions
+- Create highlight clips from long-form content
+- Translate videos
+- Add B-roll
+- Generate new content from a text prompt
+
+### Check job status
+
+Both import and editing operations run asynchronously. Poll for status or provide a callback URL to get notified when a job completes.
+
+```bash
+curl https://descriptapi.com/v1/jobs/YOUR_JOB_ID \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+<Info>
+There is no export endpoint yet. After editing via the API, open the project in Descript to export your final output.
+</Info>
+
+## How it works
+
+Everything is asynchronous. You submit a request — import media, run an agent edit — and get back a `job_id`. Then you either poll for the result or hand Descript a callback URL and go do something else.
+
+```
+Request → Job created → Processing → Completed → Open in Descript
+```
+
+Jobs are retained for 30 days. See [Working with Jobs](/guides/working-with-jobs) for polling patterns, job states, and webhook callbacks.
+
+## Authentication
+
+API requests use bearer token authentication. Create a token in your Descript account settings — each token is scoped to a single Drive.
+
+Using an AI assistant? The MCP connector handles auth via OAuth. No token needed.
+
+See [Authentication](/getting-started/authentication) for setup instructions.
+
+## Current status
+
+This is an open beta. It works — people are running production workflows on it right now — but it's still evolving. We ship new capabilities based on what people actually build.
+
+- Breaking changes get 30-day notice
+- Support lives in [Discord](https://discord.gg/descript)
+- GA pricing will be published before general availability
+
+## Next steps
+
+<Columns cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
+    Go from zero to your first API result in under 5 minutes.
+  </Card>
+  <Card title="Authentication" icon="key" href="/getting-started/authentication">
+    Create your API token and configure access.
+  </Card>
+</Columns>

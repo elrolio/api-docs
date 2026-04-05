@@ -1,0 +1,72 @@
+---
+title: "API Reference"
+sidebarTitle: "Overview"
+description: "Complete reference for the Descript REST API. Import media, run AI-powered edits, and manage jobs."
+---
+
+The Descript API is organized around REST. It accepts JSON-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes and authentication.
+
+## Base URL
+
+```
+https://descriptapi.com/v1
+```
+
+## Authentication
+
+All requests require a bearer token in the `Authorization` header:
+
+```bash
+-H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+Create tokens in your [Descript settings](https://www.descript.com/settings/api-tokens). See [Authentication](/getting-started/authentication) for details.
+
+## Endpoints
+
+### Import
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/jobs/import/project_media` | Import media and create a project |
+
+### Agent
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/jobs/agent` | Run an AI-powered edit on a project |
+
+### Jobs
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/jobs` | List recent jobs |
+| `GET` | `/jobs/{job_id}` | Get job status |
+| `DELETE` | `/jobs/{job_id}` | Cancel a running job |
+
+### Status
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/status` | Check API status _(work in progress)_ |
+
+### Partner APIs
+
+These endpoints require contacting Descript for access.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/edit_in_descript/schema` | Create an import URL for partner integrations |
+| `GET` | `/published_projects/{slug}` | Get published project metadata |
+
+## Request format
+
+Send request bodies as JSON with the `Content-Type: application/json` header.
+
+## Async operations
+
+All import and agent operations are asynchronous. They return immediately with a `job_id`. Poll the job status endpoint or use a `callback_url` for webhook notifications. See [Working with Jobs](/guides/working-with-jobs).
+
+## Rate limits
+
+The API enforces rate limits. Exceeding them returns `429 Too Many Requests` with a `Retry-After` header. See [Error Codes](/resources/error-codes#429-too-many-requests).
