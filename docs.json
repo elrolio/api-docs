@@ -21,6 +21,7 @@
             "group": "Getting Started",
             "pages": [
               "getting-started/overview",
+              "getting-started/concepts",
               "getting-started/authentication",
               "getting-started/quickstart"
             ]
@@ -33,6 +34,7 @@
               "guides/zapier",
               "guides/prompt-guide",
               "guides/use-cases",
+              "guides/webhooks",
               "guides/common-workflows",
               "guides/working-with-jobs"
             ]
@@ -40,10 +42,13 @@
           {
             "group": "Resources",
             "pages": [
+              "resources/billing",
               "resources/media-requirements",
+              "resources/security",
               "resources/known-issues",
               "resources/glossary",
               "resources/error-codes",
+              "resources/faq",
               "resources/changelog"
             ]
           }

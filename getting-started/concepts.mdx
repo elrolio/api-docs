@@ -1,0 +1,105 @@
+---
+title: "Core Concepts"
+sidebarTitle: "Concepts"
+description: "Understand Descript's data model — projects, compositions, drives, jobs, and media — before using the API."
+icon: "diagram-project"
+---
+
+If you're new to Descript, this page explains the key concepts you'll encounter in the API. If you already use Descript, this maps the app concepts to their API equivalents.
+
+## Projects
+
+A **project** is the top-level container in Descript. It holds media files, transcriptions, and compositions. When you import media through the API, a new project is created automatically.
+
+Every project has:
+- A `project_id` (used in API calls)
+- A `project_url` (opens the project in Descript)
+- One or more compositions
+
+```json
+{
+  "project_id": "e2f89ce6",
+  "project_url": "https://web.descript.com/e2f89ce6"
+}
+```
+
+## Compositions
+
+A **composition** is a timeline arrangement within a project — think of it like a sequence in a video editor. A project can have multiple compositions (like scenes in a movie, or different cuts of the same footage).
+
+When importing media, you can specify compositions and which clips go into each:
+
+```json
+{
+  "add_compositions": [
+    {
+      "name": "Full Interview",
+      "clips": [
+        { "media": "camera-a.mp4" },
+        { "media": "camera-b.mp4" }
+      ]
+    },
+    {
+      "name": "Highlights",
+      "clips": [
+        { "media": "camera-a.mp4" }
+      ]
+    }
+  ]
+}
+```
+
+## Drives
+
+A **Drive** is a Descript workspace. Projects live inside Drives. You might have a personal Drive, a team Drive, or multiple Drives for different departments.
+
+API tokens are scoped to a single Drive. This means:
+- Each token can only access projects in its Drive
+- Cross-drive operations return `403 Forbidden`
+- If you work across multiple Drives, create a separate token for each
+
+## Jobs
+
+A **job** is any long-running API operation. Importing media creates a job. Running an agent edit creates a job. Jobs run asynchronously — you get a `job_id` back immediately and check for the result later.
+
+Every job has:
+- A `job_id` — unique identifier
+- A `job_type` — either `import/project_media` or `agent`
+- A `job_state` — `running`, `stopped`, `cancelled`, or `failed`
+- A `result` — available when the job finishes
+
+Jobs are retained for 30 days. After that, the job record is no longer accessible through the API. The project itself is unaffected.
+
+## Media
+
+**Media** refers to the video and audio files you import into projects. The API accepts media from URLs — direct file uploads aren't supported yet.
+
+Key constraints:
+- Files must be under 1GB
+- URLs must be publicly accessible or pre-signed
+- Supported formats: MP4, MOV, WAV, FLAC, AAC, MP3
+
+See [Media Requirements](/resources/media-requirements) for full details.
+
+## Underlord (Agent)
+
+**Underlord** is Descript's AI editing engine. In the app, it's the AI assistant that removes filler words, enhances audio, adds captions, and more. In the API, you interact with Underlord through the Agent endpoint by providing a natural language prompt.
+
+The API calls it "agent" in endpoint names and parameters, but it's the same Underlord you'd use in the Descript app.
+
+## How they fit together
+
+```
+Drive
+└── Project
+    ├── Media (imported files)
+    ├── Transcriptions (auto-generated)
+    └── Compositions (timeline arrangements)
+        └── Clips (references to media)
+```
+
+A typical API workflow:
+1. Create a **project** and import **media** → import job
+2. Descript transcribes the media automatically
+3. Run an **agent** (Underlord) edit → agent job
+4. Open the **project** in Descript to review and export

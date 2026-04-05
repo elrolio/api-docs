@@ -1,0 +1,145 @@
+---
+title: "Building a Webhook Receiver"
+sidebarTitle: "Webhooks"
+description: "Set up a webhook endpoint to receive job completion notifications instead of polling."
+icon: "webhook"
+---
+
+Instead of polling the job status endpoint, you can pass a `callback_url` when creating a job. Descript sends a POST request to that URL when the job finishes — with the same payload you'd get from the status endpoint.
+
+This tutorial shows how to build a simple webhook receiver in Express (Node.js) and Flask (Python).
+
+## How callbacks work
+
+1. Include `callback_url` in your import or agent request
+2. Descript processes the job
+3. When the job finishes, Descript sends a POST request to your URL
+4. The POST body contains the complete job status (same as `GET /jobs/{job_id}`)
+
+```json
+{
+  "project_name": "My Video",
+  "callback_url": "https://your-server.com/webhooks/descript",
+  "add_media": {
+    "video.mp4": { "url": "https://example.com/video.mp4" }
+  }
+}
+```
+
+## Express (Node.js)
+
+A minimal webhook receiver that logs job completions and triggers the next step in your pipeline:
+
+```javascript
+import express from "express";
+
+const app = express();
+app.use(express.json());
+
+app.post("/webhooks/descript", (req, res) => {
+  const job = req.body;
+
+  console.log(`Job ${job.job_id} finished: ${job.job_state}`);
+
+  if (job.job_type === "import/project_media" && job.result?.status === "success") {
+    console.log(`Import complete. Project: ${job.project_url}`);
+    // Trigger your next step — e.g., run an agent edit
+  }
+
+  if (job.job_type === "agent" && job.result?.status === "success") {
+    console.log(`Edit complete: ${job.result.agent_response}`);
+    console.log(`Credits used: ${job.result.ai_credits_used}`);
+    // Notify your team, update your database, etc.
+  }
+
+  // Always return 200 to acknowledge receipt
+  res.sendStatus(200);
+});
+
+app.listen(3000, () => console.log("Webhook receiver running on port 3000"));
+```
+
+## Flask (Python)
+
+```python
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route("/webhooks/descript", methods=["POST"])
+def descript_webhook():
+    job = request.json
+
+    print(f"Job {job['job_id']} finished: {job['job_state']}")
+
+    if job.get("job_type") == "import/project_media":
+        if job.get("result", {}).get("status") == "success":
+            print(f"Import complete. Project: {job['project_url']}")
+            # Trigger your next step — e.g., run an agent edit
+
+    if job.get("job_type") == "agent":
+        if job.get("result", {}).get("status") == "success":
+            print(f"Edit complete: {job['result']['agent_response']}")
+            print(f"Credits used: {job['result']['ai_credits_used']}")
+            # Notify your team, update your database, etc.
+
+    return jsonify({"received": True}), 200
+
+if __name__ == "__main__":
+    app.run(port=3000)
+```
+
+## Making your webhook accessible
+
+Your webhook URL must be reachable from the internet. During development, use a tunneling tool to expose your local server:
+
+```bash
+# Using ngrok
+ngrok http 3000
+# Use the generated https://xxx.ngrok.io/webhooks/descript URL as your callback_url
+```
+
+For production, deploy your webhook receiver to any hosting platform (Railway, Render, AWS, etc.) and use the public URL.
+
+## Chaining jobs with webhooks
+
+A common pattern is to automatically run an agent edit when an import finishes. Your webhook receiver handles the handoff:
+
+```javascript
+app.post("/webhooks/descript", async (req, res) => {
+  const job = req.body;
+  res.sendStatus(200); // Acknowledge immediately
+
+  // When import finishes, automatically run an edit
+  if (job.job_type === "import/project_media" && job.result?.status === "success") {
+    await fetch("https://descriptapi.com/v1/jobs/agent", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.DESCRIPT_API_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        project_id: job.project_id,
+        prompt: "Remove filler words, apply Studio Sound, and add captions",
+        callback_url: "https://your-server.com/webhooks/descript"
+      })
+    });
+    console.log(`Started agent edit for ${job.project_id}`);
+  }
+
+  // When edit finishes, notify your team
+  if (job.job_type === "agent" && job.result?.status === "success") {
+    console.log(`Pipeline complete for ${job.project_url}`);
+    // Send a Slack notification, update a database, etc.
+  }
+});
+```
+
+This creates a fully automated pipeline: import → edit → notify — with no polling loops.
+
+## Best practices
+
+- **Return 200 immediately** — Do heavy processing after responding. Descript may retry if your endpoint takes too long to respond.
+- **Handle duplicate deliveries** — In rare cases, the same callback may be sent more than once. Use the `job_id` to deduplicate.
+- **Log everything** — Store the raw webhook payload for debugging.
+- **Validate the source** — In production, verify that webhook requests are actually coming from Descript's servers.

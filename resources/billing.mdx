@@ -1,0 +1,81 @@
+---
+title: "Billing & Usage"
+sidebarTitle: "Billing & Usage"
+description: "How media minutes and AI credits work with the Descript API, and what to do when you run out."
+icon: "credit-card"
+---
+
+API operations consume the same usage units as the Descript app — **media minutes** for importing and processing media, and **AI credits** for agent edits.
+
+## Media minutes
+
+Importing media consumes media minutes. This covers transcription, audio analysis, and processing. The amount consumed depends on the duration of the media file.
+
+{/* TODO: Confirm exact media minute consumption rates with engineering */}
+
+| Operation | Consumption |
+|-----------|------------|
+| Import media | Based on media duration |
+| Transcription | Included in import |
+| Audio processing | Included in import |
+
+## AI credits
+
+Agent edits consume AI credits. The amount depends on the complexity of the edit and the length of the content being edited.
+
+| Operation | Approximate credits |
+|-----------|-------------------|
+| Filler word removal | Varies by content length |
+| Studio Sound | Varies by content length |
+| Add captions | Varies by content length |
+| Create highlight clip | Varies by content length |
+| Translation | Varies by content length |
+| Multi-step edit | Sum of individual operations |
+
+<Info>
+The exact credit cost for each operation is returned in the job result as `ai_credits_used`:
+
+```json
+{
+  "result": {
+    "status": "success",
+    "agent_response": "Done! I applied Studio Sound and added captions.",
+    "ai_credits_used": 32
+  }
+}
+```
+</Info>
+
+## Checking your balance
+
+View your available media minutes and AI credits in your [Descript billing settings](https://www.descript.com/settings/billing).
+
+There is no API endpoint for checking your credit balance. If an operation would exceed your available credits, the API returns a `402 Payment Required` error.
+
+## What happens when you run out
+
+When your account runs out of media minutes or AI credits:
+
+- **Import requests** return `402` if you're out of media minutes
+- **Agent edit requests** return `402` if you're out of AI credits
+- Jobs that are already running will complete — the 402 only blocks new requests
+
+```json
+{
+  "error": "Payment Required",
+  "message": "Insufficient AI credits"
+}
+```
+
+## API-specific costs
+
+During the open beta, there are no additional API-specific fees. The API uses your existing plan's media minutes and AI credits. You're not charged extra for making API calls — only for the media processing and AI operations those calls trigger.
+
+{/* TODO: Update this section when GA pricing is published */}
+
+## Tips for managing usage
+
+- **Check `ai_credits_used` in job results** to understand what each operation costs
+- **Test with short clips first** before processing long-form content
+- **Batch similar edits into one prompt** — "remove filler words, add Studio Sound, and add captions" uses fewer credits than three separate agent calls
+- **Use `callback_url` instead of polling** — polling doesn't consume credits, but it does count against rate limits

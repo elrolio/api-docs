@@ -1,0 +1,91 @@
+---
+title: "Security Best Practices"
+sidebarTitle: "Security"
+description: "How to handle API tokens securely, protect your integrations, and follow security best practices."
+icon: "shield-check"
+---
+
+## Token handling
+
+API tokens provide full access to your Descript Drive. Treat them with the same care as passwords.
+
+**Do:**
+- Store tokens in environment variables or a secrets manager
+- Use different tokens for different environments (dev, staging, production)
+- Name tokens descriptively so you know what each one is for
+- Revoke tokens you're no longer using
+
+**Don't:**
+- Commit tokens to source control (even in private repos)
+- Share tokens in Slack, email, or documentation
+- Use the same token for multiple purposes
+- Log tokens in application output
+
+## Environment variables
+
+Store your token in an environment variable instead of hardcoding it:
+
+<CodeGroup>
+```bash Shell
+export DESCRIPT_API_TOKEN="dsc_your_token_here"
+```
+
+```python Python
+import os
+API_TOKEN = os.environ["DESCRIPT_API_TOKEN"]
+```
+
+```javascript Node.js
+const API_TOKEN = process.env.DESCRIPT_API_TOKEN;
+```
+</CodeGroup>
+
+Add `DESCRIPT_API_TOKEN` to your `.env` file for local development, and make sure `.env` is in your `.gitignore`:
+
+```bash
+# .gitignore
+.env
+```
+
+## Token rotation
+
+If you suspect a token has been compromised:
+
+1. Go to [Descript settings](https://www.descript.com/settings/api-tokens)
+2. Revoke the compromised token immediately
+3. Create a new token
+4. Update your application with the new token
+
+Tokens don't expire automatically, so periodic rotation is a good practice — especially for production systems.
+
+## Drive scoping
+
+Each token is scoped to a single Drive. This is a security feature — it limits the blast radius if a token is compromised. A leaked token can only access projects in its associated Drive, not your entire Descript account.
+
+Use this to your advantage:
+- Create separate Drives for different security contexts
+- Use the most restrictive Drive scope possible for each integration
+
+## Webhook security
+
+If you're using `callback_url` for webhook notifications:
+
+- **Use HTTPS** — Never use HTTP for webhook endpoints
+- **Validate the payload** — Check that the `job_id` in the callback matches a job you actually created
+- **Don't trust the payload blindly** — For sensitive operations, verify the job status with a follow-up `GET /jobs/{job_id}` call
+
+## Media URL security
+
+When importing media via pre-signed URLs:
+
+- Set expiration times to 12-48 hours — long enough for processing, short enough to limit exposure
+- Don't reuse pre-signed URLs across multiple imports
+- Use the most restrictive permissions possible (read-only)
+
+## MCP connector security
+
+The MCP connector uses OAuth for authentication. This means:
+
+- No API token is stored on the AI assistant's side
+- Access can be revoked from your Descript account at any time
+- The connector only has access to the Drives your account can access
