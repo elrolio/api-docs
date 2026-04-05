@@ -93,7 +93,8 @@ Five minutes. That's all it takes to import a video, run an AI edit, and see the
         Create a token in your [Descript settings](https://www.descript.com/settings/api-tokens). See [Authentication](/getting-started/authentication) for details.
       </Step>
       <Step title="Import a video">
-        ```bash
+        <CodeGroup>
+        ```bash cURL
         curl -X POST https://descriptapi.com/v1/jobs/import/project_media \
           -H "Authorization: Bearer YOUR_API_TOKEN" \
           -H "Content-Type: application/json" \
@@ -107,13 +108,53 @@ Five minutes. That's all it takes to import a video, run an AI edit, and see the
             "add_compositions": [
               {
                 "name": "Demo Video",
-                "clips": [
-                  { "media": "demo.mp4" }
-                ]
+                "clips": [{ "media": "demo.mp4" }]
               }
             ]
           }'
         ```
+
+        ```python Python
+        import requests
+
+        API_TOKEN = "YOUR_API_TOKEN"
+        headers = {"Authorization": f"Bearer {API_TOKEN}", "Content-Type": "application/json"}
+
+        resp = requests.post("https://descriptapi.com/v1/jobs/import/project_media",
+            headers=headers,
+            json={
+                "project_name": "My First Video",
+                "add_media": {
+                    "demo.mp4": {"url": "https://test-files.descriptapi.com/demo-video.mp4"}
+                },
+                "add_compositions": [
+                    {"name": "Demo Video", "clips": [{"media": "demo.mp4"}]}
+                ]
+            })
+        job = resp.json()
+        print(job["job_id"], job["project_url"])
+        ```
+
+        ```javascript Node.js
+        const API_TOKEN = "YOUR_API_TOKEN";
+        const headers = { "Authorization": `Bearer ${API_TOKEN}`, "Content-Type": "application/json" };
+
+        const resp = await fetch("https://descriptapi.com/v1/jobs/import/project_media", {
+          method: "POST", headers,
+          body: JSON.stringify({
+            project_name: "My First Video",
+            add_media: {
+              "demo.mp4": { url: "https://test-files.descriptapi.com/demo-video.mp4" }
+            },
+            add_compositions: [
+              { name: "Demo Video", clips: [{ media: "demo.mp4" }] }
+            ]
+          })
+        });
+        const job = await resp.json();
+        console.log(job.job_id, job.project_url);
+        ```
+        </CodeGroup>
 
         Response:
         ```json
@@ -127,15 +168,39 @@ Five minutes. That's all it takes to import a video, run an AI edit, and see the
       </Step>
       <Step title="Wait for import to complete">
         Poll the job status endpoint until `job_state` is `"stopped"`:
-        ```bash
+        <CodeGroup>
+        ```bash cURL
         curl https://descriptapi.com/v1/jobs/YOUR_JOB_ID \
           -H "Authorization: Bearer YOUR_API_TOKEN"
         ```
 
+        ```python Python
+        import time
+        while True:
+            status = requests.get(f"https://descriptapi.com/v1/jobs/{job['job_id']}",
+                headers=headers).json()
+            if status["job_state"] == "stopped":
+                break
+            time.sleep(10)
+        print("Import complete!")
+        ```
+
+        ```javascript Node.js
+        let status;
+        do {
+          await new Promise(r => setTimeout(r, 10000));
+          status = await fetch(`https://descriptapi.com/v1/jobs/${job.job_id}`,
+            { headers }).then(r => r.json());
+        } while (status.job_state !== "stopped");
+        console.log("Import complete!");
+        ```
+        </CodeGroup>
+
         Or pass `callback_url` in the import request to get a webhook notification instead.
       </Step>
       <Step title="Edit with AI">
-        ```bash
+        <CodeGroup>
+        ```bash cURL
         curl -X POST https://descriptapi.com/v1/jobs/agent \
           -H "Authorization: Bearer YOUR_API_TOKEN" \
           -H "Content-Type: application/json" \
@@ -144,6 +209,30 @@ Five minutes. That's all it takes to import a video, run an AI edit, and see the
             "prompt": "Remove filler words and add Studio Sound"
           }'
         ```
+
+        ```python Python
+        resp = requests.post("https://descriptapi.com/v1/jobs/agent",
+            headers=headers,
+            json={
+                "project_id": job["project_id"],
+                "prompt": "Remove filler words and add Studio Sound"
+            })
+        edit_job = resp.json()
+        print(edit_job["job_id"])
+        ```
+
+        ```javascript Node.js
+        const editResp = await fetch("https://descriptapi.com/v1/jobs/agent", {
+          method: "POST", headers,
+          body: JSON.stringify({
+            project_id: job.project_id,
+            prompt: "Remove filler words and add Studio Sound"
+          })
+        });
+        const editJob = await editResp.json();
+        console.log(editJob.job_id);
+        ```
+        </CodeGroup>
       </Step>
       <Step title="Check the result">
         Poll the job status. When done, the `result.agent_response` field contains a summary of what the agent did:
