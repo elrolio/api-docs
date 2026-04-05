@@ -2,38 +2,16 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Descript API",
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "favicon": "/favicon.svg",
   "colors": {
     "primary": "#4B5BF2",
     "light": "#7B87F5",
     "dark": "#3344D1"
   },
-  "topbarLinks": [
-    {
-      "name": "Get API Token",
-      "url": "https://www.descript.com/settings/api-tokens"
-    }
-  ],
-  "topbarCtaButton": {
-    "name": "Dashboard",
-    "url": "https://www.descript.com"
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
   },
-  "anchors": [
-    {
-      "name": "Community",
-      "icon": "discord",
-      "url": "https://discord.gg/descript"
-    },
-    {
-      "name": "Status",
-      "icon": "signal-bars",
-      "url": "https://status.descript.com"
-    }
-  ],
   "navigation": {
     "tabs": [
       {
@@ -113,17 +91,37 @@
           }
         ]
       }
-    ]
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Community",
+          "href": "https://discord.gg/descript",
+          "icon": "discord"
+        }
+      ]
+    }
   },
   "api": {
     "openapi": "/openapi.yaml"
   },
-  "footerSocials": {
-    "x": "https://x.com/DescriptApp",
-    "discord": "https://discord.gg/descript"
+  "navbar": {
+    "links": [
+      {
+        "label": "Get API Token",
+        "href": "https://www.descript.com/settings/api-tokens"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://www.descript.com"
+    }
   },
-  "feedback": {
-    "thumbsRating": true,
-    "suggestEdit": true
+  "footer": {
+    "socials": {
+      "x": "https://x.com/DescriptApp",
+      "discord": "https://discord.gg/descript"
+    }
   }
 }
