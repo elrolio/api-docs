@@ -1,0 +1,192 @@
+---
+title: "Use Case Recipes"
+sidebarTitle: "Use Cases"
+description: "End-to-end workflows for common video production tasks using the Descript API."
+icon: "book-open"
+---
+
+Each recipe shows the full API flow for a specific job. Pick the one closest to what you're building and adapt it.
+
+---
+
+## Podcast production pipeline
+
+**The job**: You record a podcast episode and want it cleaned up and captioned without opening Descript.
+
+<Steps>
+  <Step title="Import the recording">
+    ```bash
+    curl -X POST https://descriptapi.com/v1/jobs/import/project_media \
+      -H "Authorization: Bearer YOUR_API_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "project_name": "Episode 42 - API Launch",
+        "add_media": {
+          "recording.mp4": {
+            "url": "https://your-storage.com/episode-42.mp4"
+          }
+        },
+        "add_compositions": [
+          { "name": "Full Episode", "clips": [{ "media": "recording.mp4" }] }
+        ]
+      }'
+    ```
+  </Step>
+  <Step title="Wait for import to complete">
+    Poll `GET /jobs/{job_id}` until `job_state` is `"stopped"`, or use a `callback_url`.
+  </Step>
+  <Step title="Clean up and caption">
+    ```bash
+    curl -X POST https://descriptapi.com/v1/jobs/agent \
+      -H "Authorization: Bearer YOUR_API_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "project_id": "YOUR_PROJECT_ID",
+        "prompt": "Remove filler words, apply Studio Sound, detect and label speakers, and add captions"
+      }'
+    ```
+  </Step>
+  <Step title="Review and export">
+    Open the project in Descript to review the edits and export the final episode.
+  </Step>
+</Steps>
+
+**Total API calls**: 3 (import, poll, agent edit)
+**Credits used**: Media minutes for import + AI credits for agent edit
+
+---
+
+## Social clip factory
+
+**The job**: You have a long-form recording (webinar, interview, lecture) and want short highlight clips for social media.
+
+<Steps>
+  <Step title="Import the long-form video">
+    ```bash
+    curl -X POST https://descriptapi.com/v1/jobs/import/project_media \
+      -H "Authorization: Bearer YOUR_API_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "project_name": "Webinar Highlights - April",
+        "add_media": {
+          "webinar.mp4": {
+            "url": "https://your-storage.com/webinar-full.mp4"
+          }
+        },
+        "add_compositions": [
+          { "name": "Full Recording", "clips": [{ "media": "webinar.mp4" }] }
+        ]
+      }'
+    ```
+  </Step>
+  <Step title="Wait for import, then create highlights">
+    ```bash
+    curl -X POST https://descriptapi.com/v1/jobs/agent \
+      -H "Authorization: Bearer YOUR_API_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "project_id": "YOUR_PROJECT_ID",
+        "prompt": "Create three 30-second highlight clips from the most interesting moments. Add captions to each clip."
+      }'
+    ```
+  </Step>
+  <Step title="Review and export clips">
+    Open in Descript. The agent creates new compositions for each clip. Export them individually.
+  </Step>
+</Steps>
+
+---
+
+## Training video batch processing
+
+**The job**: Your team records training videos regularly. Each one needs the same cleanup — audio enhancement, filler removal, captions.
+
+```python
+import requests
+import time
+
+API_TOKEN = "YOUR_API_TOKEN"
+BASE = "https://descriptapi.com/v1"
+HEADERS = {"Authorization": f"Bearer {API_TOKEN}", "Content-Type": "application/json"}
+
+# List of training recordings to process
+recordings = [
+    ("Onboarding Module 1", "https://storage.com/onboarding-1.mp4"),
+    ("Onboarding Module 2", "https://storage.com/onboarding-2.mp4"),
+    ("Onboarding Module 3", "https://storage.com/onboarding-3.mp4"),
+]
+
+STANDARD_EDIT = "Remove filler words, apply Studio Sound, and add captions"
+
+for name, url in recordings:
+    # Import
+    resp = requests.post(f"{BASE}/jobs/import/project_media", headers=HEADERS, json={
+        "project_name": name,
+        "add_media": {"video.mp4": {"url": url}},
+        "add_compositions": [{"name": "Main", "clips": [{"media": "video.mp4"}]}]
+    })
+    job = resp.json()
+    print(f"Importing: {name}")
+
+    # Wait for import
+    while True:
+        status = requests.get(f"{BASE}/jobs/{job['job_id']}", headers=HEADERS).json()
+        if status["job_state"] == "stopped":
+            break
+        time.sleep(10)
+
+    # Apply standard edits
+    resp = requests.post(f"{BASE}/jobs/agent", headers=HEADERS, json={
+        "project_id": job["project_id"],
+        "prompt": STANDARD_EDIT
+    })
+    print(f"Editing: {name} → {resp.json()['job_id']}")
+```
+
+This processes each recording with identical edits. Change `STANDARD_EDIT` to match your team's standard processing.
+
+---
+
+## Content repurposing
+
+**The job**: Turn one recording into multiple outputs — a clean full version, a highlights reel, and a captioned version for social.
+
+<Steps>
+  <Step title="Import the source recording">
+    Import as usual with `POST /jobs/import/project_media`.
+  </Step>
+  <Step title="Apply base cleanup">
+    ```json
+    {
+      "project_id": "YOUR_PROJECT_ID",
+      "prompt": "Remove filler words and apply Studio Sound"
+    }
+    ```
+    This gives you a clean base to work from.
+  </Step>
+  <Step title="Create a highlight reel">
+    ```json
+    {
+      "project_id": "YOUR_PROJECT_ID",
+      "prompt": "Create a 60-second highlight reel from the best moments and add captions"
+    }
+    ```
+  </Step>
+  <Step title="Review all outputs in Descript">
+    The project now has your original composition (cleaned up) plus a new highlight composition. Open in Descript to review and export each version.
+  </Step>
+</Steps>
+
+---
+
+## What all recipes have in common
+
+Every workflow follows the same pattern:
+
+1. **Import** → `POST /jobs/import/project_media`
+2. **Wait** → Poll `GET /jobs/{job_id}` or use `callback_url`
+3. **Edit** → `POST /jobs/agent` with a specific prompt
+4. **Wait** → Poll again or use callback
+5. **Review** → Open `project_url` in Descript to export
+
+The difference is what you put in the prompt. See the [Prompt Guide](/guides/prompt-guide) for how to write prompts that get consistent results.

@@ -31,6 +31,8 @@
               "guides/mcp",
               "guides/cli",
               "guides/zapier",
+              "guides/prompt-guide",
+              "guides/use-cases",
               "guides/common-workflows",
               "guides/working-with-jobs"
             ]
@@ -38,6 +40,7 @@
           {
             "group": "Resources",
             "pages": [
+              "resources/media-requirements",
               "resources/known-issues",
               "resources/glossary",
               "resources/error-codes",

@@ -1,0 +1,97 @@
+---
+title: "Writing Effective Prompts"
+sidebarTitle: "Prompt Guide"
+description: "How to write prompts that get the best results from the Descript Agent API."
+icon: "pen-line"
+---
+
+The Agent API takes a natural language prompt and edits your project accordingly. The quality of the result depends on how you write the prompt. This guide covers what works, what doesn't, and how to get consistent results.
+
+## One-shot, not conversational
+
+The API processes each prompt independently — there's no back-and-forth. Write your prompt as a complete, self-contained instruction with everything the agent needs to know.
+
+**Works well:**
+```
+Remove all filler words, apply Studio Sound, and add captions in white text
+```
+
+**Won't work as expected:**
+```
+Make it better
+```
+
+The agent can't ask follow-up questions. If the prompt is vague, the result will be unpredictable.
+
+## Be specific about what you want
+
+Name the exact features and operations you want applied. The agent understands Descript's feature set by name.
+
+| Specific prompt | Vague prompt |
+|----------------|-------------|
+| "Remove filler words" | "Clean up the audio" |
+| "Apply Studio Sound" | "Make it sound better" |
+| "Add captions" | "Make it accessible" |
+| "Create a 30-second highlight clip" | "Shorten it" |
+
+## Combine multiple operations
+
+You can request several edits in a single prompt. The agent handles them in sequence.
+
+```
+Remove filler words, apply Studio Sound, detect speakers,
+and add captions with speaker labels
+```
+
+This is more efficient than making separate API calls for each operation, and it lets the agent apply edits in a logical order.
+
+## What the agent can do
+
+These are the operations you can request in a prompt:
+
+**Audio:**
+- Apply Studio Sound (noise removal, volume normalization)
+- Remove filler words ("um", "uh", "like", "you know")
+
+**Captions and text:**
+- Add captions
+- Customize caption style (color, position, font)
+
+**Speakers:**
+- Detect and label speakers
+- Assign speaker names
+
+**Content editing:**
+- Create highlight clips from long-form content
+- Translate to another language
+
+**Creative:**
+- Add B-roll
+- Generate new content entirely from a text prompt
+- Write a script and produce a video from it
+
+## Creating content from scratch
+
+The agent can generate entirely new projects from a text prompt — no imported media required. Use the `project_name` parameter instead of `project_id`:
+
+```bash
+curl -X POST https://descriptapi.com/v1/jobs/agent \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_name": "Coffee Tutorial",
+    "prompt": "Write a script about how to make great coffee and create a video from it"
+  }'
+```
+
+For best results with generation prompts, include:
+- The topic or subject
+- Approximate length ("30 seconds", "5 minutes")
+- Style or tone ("tutorial", "promotional", "casual")
+
+## Prompts that don't work well
+
+- **Visual layout instructions**: "Move the title to the upper left corner" — the agent handles audio and content editing well, but precise visual placement of layers isn't reliable
+- **Referencing external context the agent can't access**: "Edit this to match our brand guidelines" — the agent doesn't know your brand guidelines unless you include them in the prompt
+- **Multi-project operations**: Each prompt targets one project. You can't say "apply this edit to all my projects"
+- **Export instructions**: "Export as MP4" — there's no export endpoint yet. Open the project in Descript to export.

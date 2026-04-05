@@ -1,0 +1,64 @@
+---
+title: "Media Requirements"
+sidebarTitle: "Media Requirements"
+description: "Supported file formats, size limits, URL requirements, and file handling for the Descript API."
+icon: "file-video"
+---
+
+## File size
+
+Imported files are limited to **1GB** per file.
+
+## URL requirements
+
+The API imports media from URLs — direct file uploads from your computer aren't supported yet.
+
+Media URLs must:
+
+- **Be publicly accessible** or use a pre-signed URL that Descript's servers can reach
+- **Support HTTP Range requests** for large files
+- **Remain valid for 12-48 hours** during processing (use pre-signed URLs with appropriate expiration)
+
+## Supported formats
+
+The API supports the same media formats as Descript:
+
+**Video**: MP4, MOV (h264, HEVC codecs)
+
+**Audio**: WAV, FLAC, AAC, MP3
+
+## Google Drive files
+
+The direct API doesn't accept Google Drive share links. Convert them to direct download URLs first:
+
+```
+# Share link (won't work)
+https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+
+# Direct download (use this)
+https://drive.google.com/uc?export=download&id=FILE_ID
+```
+
+The CLI handles this conversion automatically — pass the share link directly.
+
+## Dropbox files
+
+Change `dl=0` to `dl=1` in the share URL:
+
+```
+# Share link (won't work)
+https://www.dropbox.com/s/abc123/video.mp4?dl=0
+
+# Direct download (use this)
+https://www.dropbox.com/s/abc123/video.mp4?dl=1
+```
+
+The CLI handles this conversion automatically.
+
+## Zapier file handling
+
+When using the Zapier integration with Google Drive or Dropbox triggers, use the **File** field in the Descript action — not the Media URL field. Zapier handles the URL conversion.
+
+## Local files
+
+Local file upload is not currently supported. Media must be hosted at a URL accessible by Descript's servers. If you need to process local files, upload them to a cloud storage service first and use the resulting URL.
