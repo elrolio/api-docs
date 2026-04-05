@@ -111,6 +111,14 @@ You've exceeded the rate limit.
 | `X-RateLimit-Remaining` | Requests remaining in the current window |
 | `X-RateLimit-Consumed` | Requests consumed in the current window |
 
+**Current rate limits:**
+
+| Endpoint | Limit |
+|----------|-------|
+| Import (`POST /jobs/import/project_media`) | 10 requests per minute |
+| Agent edit (`POST /jobs/agent`) | 10 requests per minute |
+| Job status (`GET /jobs/{job_id}`) | 20 requests per second per user |
+
 **Fix:** Wait for the duration specified in `Retry-After` before retrying. Implement exponential backoff in production code. Don't retry immediately — this can compound the issue.
 
 ## Server error codes

@@ -12,24 +12,35 @@ icon: "circle-question"
     Yes. The API uses your existing Descript account and plan. API tokens are created in your account settings, and operations consume your plan's media minutes and AI credits.
   </Accordion>
   <Accordion title="Is the API free?">
-    During the open beta, there are no additional API-specific fees. The API uses your existing plan's media minutes and AI credits. GA pricing will be published before general availability.
+    During the open beta, there are no additional API-specific fees. API usage debits against your existing media minutes and AI credits with no extra limitations. GA pricing will be published before general availability.
   </Accordion>
-  <Accordion title="What can the API do that the app can't?">
-    The API doesn't add new editing capabilities — it exposes the same features available in Descript. The value is automation: batch processing, programmatic workflows, and integration with other tools. You can process 100 videos overnight without opening the app.
+  <Accordion title="Why can't I get an API just for Studio Sound, or just for transcription?">
+    Because there are so many different ways people use and want to automate Descript, the most efficient and flexible approach is the agentic editing API, where the full suite of product functionality is already supported. Instead of separate endpoints for each feature, you write a prompt — "apply Studio Sound" — and the agent handles it.
   </Accordion>
-  <Accordion title="Can I export videos through the API?">
-    Not yet. After editing via the API, open the project in Descript to export. An export endpoint is under development.
+  <Accordion title="Can I use the API to get content out of Descript?">
+    An export endpoint is in development. Right now the API is focused on importing and editing — that's where the most demand has been. After editing via the API, open the project in Descript to review and export.
+  </Accordion>
+  <Accordion title="Does the Edit API work the same as Underlord in the app?">
+    Mostly, yes. The Edit API uses the same reasoning and underlying models as Underlord. The key difference is that in the app, you can chat back and forth with Underlord and visually review edits step by step. The API doesn't support that — you write a single prompt with all the context the agent needs. One-shot, not conversational.
+
+    Tip: refine your prompts by testing with the agent in-app first, then use the working prompt through the API.
+  </Accordion>
+  <Accordion title="I want to automate my editing workflow, but I'm not a programmer. What should I do?">
+    You have options. The [Zapier integration](/guides/zapier) lets you automate import and editing workflows without writing code. You can also use the [MCP connector](/guides/mcp) with Claude or Cursor to edit video through conversation. And tools like Claude Code and Codex can help you build simple integrations even if you're not a developer — the API is relatively simple.
   </Accordion>
 </AccordionGroup>
 
-## Authentication
+## Authentication & accounts
 
 <AccordionGroup>
   <Accordion title="Do I need an API token for the MCP connector?">
-    No. The MCP connector (for Claude, Cursor, and other AI assistants) uses OAuth. You authorize through your browser once, and the connector handles authentication from there.
+    No. The MCP connector uses OAuth for all surfaces — Claude, Claude Code, and Cursor. You authorize through your browser once, and the connector handles authentication from there. See the [MCP guide](/guides/mcp).
   </Accordion>
   <Accordion title="Can I use one token for multiple Drives?">
     No. Each token is scoped to a single Drive. If you work across multiple Drives, create a separate token for each. See [Authentication](/getting-started/authentication).
+  </Accordion>
+  <Accordion title="Does the API support service accounts?">
+    No. API tokens belong to the user who created them and inherit that user's Descript permissions. You don't need a service account — but some enterprise customers create a standalone user account to own shared permissions, and use that account's token for API automation.
   </Accordion>
   <Accordion title="Do tokens expire?">
     Tokens don't expire automatically. You can revoke them at any time in your Descript settings. For security, consider rotating tokens periodically — especially for production systems.
@@ -40,16 +51,16 @@ icon: "circle-question"
 
 <AccordionGroup>
   <Accordion title="What are the rate limits?">
-    The API enforces rate limits. When exceeded, you receive a `429 Too Many Requests` response with a `Retry-After` header telling you how long to wait. See [Error Codes](/resources/error-codes#429-too-many-requests).
+    Import and Agent endpoints: 10 requests per minute each. Job status polling: 20 requests per second per user. These exist for infrastructure stability, not to cap the value you get from the API. See [Error Codes](/resources/error-codes#429-too-many-requests).
   </Accordion>
   <Accordion title="What happens when I run out of credits?">
     New import and agent requests return `402 Payment Required`. Jobs already running will complete. Check your balance in [Descript billing settings](https://www.descript.com/settings/billing).
   </Accordion>
   <Accordion title="Is there a file size limit?">
-    Yes — 1GB per imported file. See [Media Requirements](/resources/media-requirements) for details on supported formats and URL requirements.
+    Yes — 1GB per imported file. See [Media Requirements](/resources/media-requirements).
   </Accordion>
   <Accordion title="How long are jobs kept?">
-    Job records are available for 30 days. After that, the job status is no longer accessible through the API. The Descript projects created by those jobs are unaffected.
+    Job records are available for 30 days. After that, the job status is no longer accessible through the API. Projects created by those jobs are unaffected.
   </Accordion>
 </AccordionGroup>
 
@@ -63,7 +74,7 @@ icon: "circle-question"
     Check that your media URL is publicly accessible, supports HTTP Range requests, and will remain valid for 12-48 hours. Google Drive and Dropbox share links don't work with the direct API — convert them to direct download URLs or use the CLI. See [Media Requirements](/resources/media-requirements).
   </Accordion>
   <Accordion title="The agent edit didn't do what I expected">
-    Write more specific prompts. "Make it better" won't produce reliable results. "Remove filler words, apply Studio Sound, and add captions" will. See the [Prompt Guide](/guides/prompt-guide).
+    Write more specific prompts. "Make it better" won't produce reliable results. "Remove filler words, apply Studio Sound, and add captions" will. You can also refine prompts by testing with Underlord in the Descript app first. See the [Prompt Guide](/guides/prompt-guide).
   </Accordion>
   <Accordion title="Can I upload local files?">
     Not yet. Upload your file to cloud storage (S3, Google Cloud Storage, etc.) and use the resulting URL. The CLI automatically handles Google Drive and Dropbox share links.

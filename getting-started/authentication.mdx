@@ -89,9 +89,17 @@ const response = await fetch("https://descriptapi.com/v1/jobs", {
 - Create descriptive names (e.g., "Production automation", "CI pipeline") so you know what each token is for
 - Use separate tokens for different environments or use cases so you can revoke one without affecting others
 
-## Rate limiting
+## Rate limits
 
-The API enforces rate limits. When you exceed them, you'll receive a `429 Too Many Requests` response with these headers:
+Rate limits exist for infrastructure stability, not to cap the value you get from the API.
+
+| Endpoint | Limit |
+|----------|-------|
+| `POST /jobs/import/project_media` | 10 requests per minute |
+| `POST /jobs/agent` | 10 requests per minute |
+| `GET /jobs/{job_id}` | 20 requests per second per user |
+
+When you exceed a limit, the API returns `429 Too Many Requests` with these headers:
 
 | Header | Description |
 |--------|-------------|

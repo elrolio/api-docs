@@ -184,6 +184,8 @@ curl -X DELETE https://descriptapi.com/v1/jobs/YOUR_JOB_ID \
   -H "Authorization: Bearer YOUR_API_TOKEN"
 ```
 
+A successful cancellation returns `204 No Content` with no response body. If you check the job status afterwards via `GET /jobs/{job_id}`, it will show `job_state: "cancelled"`.
+
 Cancelled jobs stop processing immediately. Any partial work (e.g., a partially imported project) remains in Descript but may be incomplete.
 
 ## Job retention
