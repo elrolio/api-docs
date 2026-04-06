@@ -91,8 +91,17 @@ Once connected, try these to get started:
 
 ---
 
+## How conversation works
+
+When you use Descript through Claude or another AI assistant, you can have a multi-turn conversation. Each message you send can trigger a separate API call — so "import this video," followed by "now add captions," works naturally.
+
+Under the hood, each API call is independent (the Agent API doesn't carry context between calls). But your AI assistant manages that context for you, making the experience feel conversational.
+
+<Tip>
+For best results, be specific in each message. "Add Studio Sound, remove filler words, and generate captions" in one message is more reliable than splitting it across three.
+</Tip>
+
 ## Limitations
 
 - **No local file upload**: Media must be hosted at a public or pre-signed URL. You can't upload files directly from your computer.
 - **No export**: After editing, open the project in Descript to export. There's no export endpoint yet.
-- **One-shot prompts**: The API doesn't support follow-up conversation. Frame your edits as complete, self-contained instructions.

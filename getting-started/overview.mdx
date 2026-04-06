@@ -32,162 +32,17 @@ There's also a [Zapier integration](/guides/zapier) if you want to wire up impor
 
 ## What you can do
 
-### Import media
+**Import media** — Create a new project and import media from URLs in a single request. Descript handles transcription, processing, and composition setup automatically.
 
-Create a new project and import media from URLs in a single request. Descript handles transcription, processing, and composition setup automatically.
+**Edit with AI** — Use natural language prompts to edit any project. The Agent API accepts the same kinds of instructions you'd give Underlord in the app: remove filler words, apply Studio Sound, add captions, create highlight clips, translate videos, add B-roll, or generate new content entirely from a text prompt.
 
-<CodeGroup>
-```bash cURL
-curl -X POST https://descriptapi.com/v1/jobs/import/project_media \
-  -H "Authorization: Bearer YOUR_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "project_name": "My Video",
-    "add_media": {
-      "video.mp4": {
-        "url": "https://example.com/video.mp4"
-      }
-    }
-  }'
-```
-
-```python Python
-import requests
-
-resp = requests.post(
-    "https://descriptapi.com/v1/jobs/import/project_media",
-    headers={
-        "Authorization": "Bearer YOUR_API_TOKEN",
-        "Content-Type": "application/json"
-    },
-    json={
-        "project_name": "My Video",
-        "add_media": {
-            "video.mp4": {
-                "url": "https://example.com/video.mp4"
-            }
-        }
-    }
-)
-job = resp.json()
-print(job["job_id"], job["project_url"])
-```
-
-```javascript Node.js
-const resp = await fetch(
-  "https://descriptapi.com/v1/jobs/import/project_media",
-  {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer YOUR_API_TOKEN",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      project_name: "My Video",
-      add_media: {
-        "video.mp4": {
-          url: "https://example.com/video.mp4"
-        }
-      }
-    })
-  }
-);
-const job = await resp.json();
-console.log(job.job_id, job.project_url);
-```
-</CodeGroup>
-
-### Edit with AI
-
-Use natural language prompts to edit any project. The Agent API accepts the same kinds of instructions you'd give Underlord in the app.
-
-<CodeGroup>
-```bash cURL
-curl -X POST https://descriptapi.com/v1/jobs/agent \
-  -H "Authorization: Bearer YOUR_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "project_id": "YOUR_PROJECT_ID",
-    "prompt": "Remove filler words, add Studio Sound, and add captions"
-  }'
-```
-
-```python Python
-resp = requests.post(
-    "https://descriptapi.com/v1/jobs/agent",
-    headers={
-        "Authorization": "Bearer YOUR_API_TOKEN",
-        "Content-Type": "application/json"
-    },
-    json={
-        "project_id": "YOUR_PROJECT_ID",
-        "prompt": "Remove filler words, add Studio Sound, and add captions"
-    }
-)
-edit_job = resp.json()
-print(edit_job["job_id"])
-```
-
-```javascript Node.js
-const resp = await fetch(
-  "https://descriptapi.com/v1/jobs/agent",
-  {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer YOUR_API_TOKEN",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      project_id: "YOUR_PROJECT_ID",
-      prompt: "Remove filler words, add Studio Sound, and add captions"
-    })
-  }
-);
-const editJob = await resp.json();
-console.log(editJob.job_id);
-```
-</CodeGroup>
-
-The agent can:
-- Apply Studio Sound for audio enhancement
-- Remove filler words
-- Detect and label speakers
-- Add captions
-- Create highlight clips from long-form content
-- Translate videos
-- Add B-roll
-- Generate new content from a text prompt
-
-### Check job status
-
-Both import and editing operations run asynchronously. Poll for status or provide a callback URL to get notified when a job completes.
-
-<CodeGroup>
-```bash cURL
-curl https://descriptapi.com/v1/jobs/YOUR_JOB_ID \
-  -H "Authorization: Bearer YOUR_API_TOKEN"
-```
-
-```python Python
-status = requests.get(
-    "https://descriptapi.com/v1/jobs/YOUR_JOB_ID",
-    headers={"Authorization": "Bearer YOUR_API_TOKEN"}
-).json()
-print(status["job_state"])  # "running" or "stopped"
-```
-
-```javascript Node.js
-const status = await fetch(
-  "https://descriptapi.com/v1/jobs/YOUR_JOB_ID",
-  { headers: { "Authorization": "Bearer YOUR_API_TOKEN" } }
-).then(r => r.json());
-console.log(status.job_state); // "running" or "stopped"
-```
-</CodeGroup>
+**Check job status** — Both import and editing operations run asynchronously. Poll for status or provide a callback URL to get notified when a job completes.
 
 <Info>
 There is no export endpoint yet. After editing via the API, open the project in Descript to export your final output.
 </Info>
+
+Ready to try it? The [Quickstart](/getting-started/quickstart) walks you through all three operations with code samples in cURL, Python, and Node.js.
 
 ## How it works
 
