@@ -13,17 +13,20 @@ The MCP connector handles authentication through OAuth. You connect once, then i
 
 ## Claude
 
-Connect Descript as a connector in the Claude app (web or desktop).
+Connect Descript as a connector in the Claude app (claude.ai, web or desktop).
 
 <Steps>
   <Step title="Open Connectors">
-    Click **Customize** in the sidebar, then scroll to **Connectors**.
+    In the left pane, navigate to **Customize** → **Connectors**, and click the **+** sign to add a custom connector.
   </Step>
   <Step title="Add Descript">
-    Find **Descript** in the connector list and click **Connect**.
+    Enter **Descript** as the name and `https://api.descript.com/v2/mcp` as the remote MCP server URL, then click **Add**.
+  </Step>
+  <Step title="Connect">
+    Descript will appear under the "Not connected" list. Click **Connect** to log in.
   </Step>
   <Step title="Authorize">
-    A browser window opens. Sign in to your Descript account and click **Allow**.
+    Sign into your Descript account in the browser window that opens and click **Allow**. You'll be redirected back to Claude — you're connected.
   </Step>
 </Steps>
 

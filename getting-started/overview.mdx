@@ -1,82 +1,96 @@
 ---
 title: "Overview"
 sidebarTitle: "Overview"
-description: "Edit video through code, AI assistants, or no-code automation. The Descript API gives you programmatic access to the same editing engine used by millions of creators."
+description: "Automate video editing with the Descript API. Four ways in — AI assistants, Zapier, CLI, or direct API. No developer required."
 ---
 
-Everything you do in Descript — removing filler words, enhancing audio, adding captions, creating highlight clips — is now available through code. Or through an AI assistant. Or through a Zapier zap. The editing intelligence stays the same. The interface adapts to you.
+Descript's AI editor, Underlord, can transcribe, remove filler words, enhance audio, add captions, create clips, and more. The API and MCP expose all of that so it can be triggered automatically — from any AI tool, automation platform, or custom code — without opening the app.
 
-## Three ways in
+## The basic loop
 
-You don't have to choose between power and convenience. The API meets you where you work.
+1. **Something happens** — a new recording, a file upload, a webhook, a calendar event. You define the trigger.
+2. **Underlord does the work** — import, transcribe, remove filler words, add Studio Sound, cut clips, generate captions. Whatever you configured.
+3. **You show up for the last 10%** — open Descript, review the rough cut, make it great. The boring part is already done.
 
-<Columns cols={3}>
-  <Card title="AI Assistants" icon="message-bot" href="/guides/mcp">
-    Tell Claude or Cursor what you want, and it handles the rest. "Remove filler words and add captions" — that's the whole request.
+## Four ways in
+
+No developer required for any of these. Pick the one that fits how you work.
+
+<Columns cols={2}>
+  <Card title="AI Assistants (MCP)" icon="message-bot" href="/guides/mcp">
+    Connect to Claude, Cursor, or any MCP-compatible tool. Describe what you want in plain English. No API token needed — auth is handled via OAuth.
 
     **Best for**: Conversational editing, quick tasks, exploration.
   </Card>
+  <Card title="Zapier" icon="bolt" href="/guides/zapier">
+    Wire up triggers from Google Drive, Slack, or any Zapier-connected tool. Descript imports and edits automatically. No code.
+
+    **Best for**: Automated pipelines, recurring workflows, non-technical teams.
+  </Card>
   <Card title="CLI" icon="terminal" href="/guides/cli">
-    Test ideas fast without leaving your terminal. Interactive flows handle setup. Built-in polling tells you when the job's done.
+    Test ideas fast from your terminal. Interactive flows, built-in polling, instant feedback.
 
     **Best for**: Quick testing, scripting, local development.
   </Card>
   <Card title="REST API" icon="code" href="/api-reference">
-    Full control for production systems. Build the automation your team has been asking for.
+    Full HTTP access for production systems. You own the logic — orchestration, error handling, webhooks.
 
     **Best for**: Production automation, custom integrations, platform teams.
   </Card>
 </Columns>
 
-There's also a [Zapier integration](/guides/zapier) if you want to wire up import and editing workflows without touching code.
+<Tip>
+**Using an AI assistant?** Copy our [AI Context Primer](/guides/ai-setup) and paste it into Claude, ChatGPT, or any AI tool. It will walk you through setup automatically.
+</Tip>
 
-## What you can do
+## What Underlord can do via the API
 
-**Import media** — Create a new project and import media from URLs in a single request. Descript handles transcription, processing, and composition setup automatically.
+- Import media from a URL and create a Descript project
+- Transcribe audio and video
+- Remove filler words
+- Apply Studio Sound (noise reduction + voice enhancement)
+- Generate captions
+- Create highlight clips from long-form content
+- Add B-roll
+- Translate and dub audio
+- Build rough cuts from a text prompt
+- Generate a new video project entirely from a prompt — no media required
 
-**Edit with AI** — Use natural language prompts to edit any project. The Agent API accepts the same kinds of instructions you'd give Underlord in the app: remove filler words, apply Studio Sound, add captions, create highlight clips, translate videos, add B-roll, or generate new content entirely from a text prompt.
+## Common use cases
 
-**Check job status** — Both import and editing operations run asynchronously. Poll for status or provide a callback URL to get notified when a job completes.
+- **Podcasts** — Captioned social clips from every new episode by the next morning
+- **Webinars** — A clean, ready-to-review rough cut waiting by end of day
+- **Blog posts** — Auto-generate a video teaser the moment a post goes live
+- **Sales calls** — Surface key moments as a shareable highlight reel
 
-<Info>
-There is no export endpoint yet. After editing via the API, open the project in Descript to export your final output.
-</Info>
-
-Ready to try it? The [Quickstart](/getting-started/quickstart) walks you through all three operations with code samples in cURL, Python, and Node.js.
+Ready to try it? The [Quickstart](/getting-started/quickstart) gets you to a result in under 5 minutes.
 
 ## How it works
 
-Everything is asynchronous. You submit a request — import media, run an agent edit — and get back a `job_id`. Then you either poll for the result or hand Descript a callback URL and go do something else.
+Everything is asynchronous. You submit a request — import media, run an agent edit — and get back a `job_id`. Then you either poll for the result or hand Descript a callback URL and move on.
 
 ```
 Request → Job created → Processing → Completed → Open in Descript
 ```
 
-Jobs are retained for 30 days. See [Working with Jobs](/guides/working-with-jobs) for polling patterns, job states, and webhook callbacks.
-
-## Authentication
-
-API requests use bearer token authentication. Create a token in your Descript account settings — each token is scoped to a single Drive.
-
-Using an AI assistant? The MCP connector handles auth via OAuth. No token needed.
-
-See [Authentication](/getting-started/authentication) for setup instructions.
+Jobs are retained for 30 days. See [Working with Jobs](/guides/working-with-jobs) for polling, states, and webhooks.
 
 ## Current status
 
-This is an open beta. It works — people are running production workflows on it right now — but it's still evolving. We ship new capabilities based on what people actually build.
+This is an open beta. It works — people are running production workflows on it right now — but it's still evolving.
 
 - Breaking changes get 30-day notice
-- Support lives in [Discord](https://discord.gg/descript)
+- **Discord** — community support and feedback
+- **[Weekly Office Hours](https://descript.com/api)** — live help and workflow demos
 - GA pricing will be published before general availability
 
 ## Next steps
 
 <Columns cols={2}>
   <Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
-    Go from zero to your first API result in under 5 minutes.
+    Zero to your first result in under 5 minutes.
   </Card>
-  <Card title="Authentication" icon="key" href="/getting-started/authentication">
-    Create your API token and configure access.
+  <Card title="Set Up with AI" icon="wand-magic-sparkles" href="/guides/ai-setup">
+    Copy the AI Context Primer and let your AI assistant walk you through it.
   </Card>
 </Columns>

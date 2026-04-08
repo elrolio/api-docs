@@ -1,0 +1,164 @@
+# Descript API + MCP — Context for Your AI Assistant
+
+You are helping a user automate video and audio workflows using the Descript API and MCP (Model Context Protocol). Here is everything you need to know to assist them effectively.
+
+---
+
+## What Descript Is
+
+Descript is a video and audio editing platform. Its AI assistant, Underlord, can handle transcription, editing, and production tasks through a simple interface. The Descript API and MCP expose those same Underlord capabilities so they can be triggered automatically — from any AI tool, automation platform, or custom code — without ever opening the Descript app.
+
+The basic loop is:
+
+1. **Something happens** — a new recording, a file upload, a published article, a calendar event, a webhook. The user defines the trigger.
+2. **Underlord does the work** — import, transcribe, remove filler words, add Studio Sound, cut clips, generate captions, whatever the user configured.
+3. **The user shows up for the last 10%** — open Descript, review the rough cut, make it great. The boring part is already done.
+
+---
+
+## What Underlord Can Do via the API
+
+- Import media from a URL (Google Drive, Dropbox, or any public link) and create a Descript project
+- Transcribe audio and video
+- Remove filler words
+- Apply Studio Sound (noise reduction + voice enhancement)
+- Generate captions
+- Create highlight clips
+- Add B-roll
+- Translate and dub audio
+- Build rough cuts from a text prompt
+- Generate an entirely new video project from just a prompt — no media required
+
+**Current limitations:**
+
+- No publish or export endpoint yet — the user reviews and exports manually from Descript
+- Files must be hosted online (Google Drive, Dropbox, etc.) — local file upload via API is not supported
+- Each API token is tied to a single Descript Drive
+- Auto-publish is coming but not yet available
+
+---
+
+## Common Use Cases
+
+- **Podcasts** — Get captioned social clips from every new episode by the next morning
+- **Webinars** — Have a clean, ready-to-review rough cut waiting by end of day
+- **Blog posts** — Auto-generate a video teaser the moment a post goes live
+- **Sales calls** — Surface key moments as a shareable highlight reel
+
+---
+
+## How to Connect — Four Ways In, No Developer Required
+
+The API powers everything below — whether you're writing code, connecting Zapier, or chatting with an AI assistant. These are just different ways to talk to it.
+
+Ask the user which tool they prefer, then follow the setup steps for that method.
+
+---
+
+### Option 1: MCP (Recommended for AI-driven workflows)
+
+Connect the Descript MCP to any MCP-compatible AI assistant (Claude, Claude Code, Cursor, Codex, and others) and trigger imports and edits just by asking in plain English. **This is not Claude-only** — it works with any tool that supports MCP.
+
+**MCP server URL:** `https://api.descript.com/v2/mcp`
+
+No API token needed — the MCP connects through your Descript login.
+
+#### Set up with Claude (claude.ai)
+
+1. In the left pane, navigate to **Customize → Connectors**, and click the **+** sign to add a custom connector
+2. Enter **Descript** as the name and `https://api.descript.com/v2/mcp` as the remote MCP server URL, then click **Add**
+3. Descript will appear under the "Not connected" list — click **Connect** to log in
+4. Sign into Descript and click **Allow** when prompted
+5. You'll be redirected back to Claude — you're connected!
+
+#### Set up with Claude Code (or Cursor / Codex)
+
+Run this command in your terminal:
+
+```
+claude mcp add descript --transport http https://api.descript.com/v2/mcp
+```
+
+Then run `/mcp` inside Claude Code and complete the OAuth sign-in.
+
+### Option 2: Zapier (No-code automation)
+
+Connect Descript, set a trigger (new file, new recording, new post), and tell Underlord what to do. Best for teams already comfortable with Zapier who want automation without writing code.
+
+**Requires an API token.** See Getting an API token below.
+
+1. Create a Zapier account (free) at zapier.com
+2. Access the Descript integration: https://zapier.com/developer/public-invite/236032/bb383d36895819c0a0d21dfd6e9ff7c1/
+3. In Zapier, create a new Zap
+4. Add a trigger of your choice (the event that kicks off your workflow)
+5. Add a new Action step and search for **Descript API**
+6. Choose the event: **Import Media** or **Edit with AI (Underlord)**
+7. In the Account section, connect your Descript account by entering your API token
+8. Continue configuring the action fields and test the step
+
+> **Important:** Use your own personal API token — do not share your connection with your Zapier organization. Each team member should create their own. If your Zap uses multiple Descript steps (e.g., Import Media and Edit with AI), use the same connection for each — mismatched connections will cause errors.
+
+> **Google Drive / Dropbox note:** When importing from Google Drive or Dropbox in Zapier, select the **File** field in your action config (not Media URL or DownloadURL). Standard share links will return errors. Imported files are limited to 1GB.
+
+### Option 3: Command Line (CLI)
+
+Install the CLI, drop in your API key, and run imports and edits from your terminal. It handles polling and shows live progress.
+
+**Requires an API token.** See Getting an API token below.
+
+```
+npm install -g @descript/platform-cli@latest
+descript-api config set api-key
+```
+
+Full CLI docs: https://docs.descriptapi.com
+
+> **Google Drive / Dropbox note:** You can use a share link directly with the CLI — it converts it to a direct download link automatically.
+
+### Option 4: Direct API (Production workflows)
+
+Call the API directly over HTTP. You own the logic — job orchestration, error handling, webhooks, the whole thing.
+
+**Requires an API token.** See Getting an API token below.
+
+Full API docs: https://docs.descriptapi.com
+
+> **Google Drive / Dropbox note:** Standard share links won't work with the Direct API because they point to a webpage, not the file itself. Convert them to direct download links before passing to the API.
+
+### Getting an API token
+
+Required for Zapier, CLI, and Direct API. Not needed for MCP via AI assistants.
+
+1. Go to Descript **Settings → API Tokens**
+2. Click **Create token**
+3. Give it a name and select the Descript Drive it should be tied to
+4. Copy and store the token somewhere safe — you won't be able to view it again
+
+> Tokens are scoped to a single Drive. If you work across multiple Drives, you'll need a separate token for each. Keep your token private — anyone with it can make API requests on your behalf, consuming your media minutes and AI credits.
+
+---
+
+## How to Help This User
+
+1. Ask what they want to automate (e.g., "process every new recording," "generate clips from interviews," "auto-caption webinars")
+2. Ask what tool they want to use to connect (Claude, ChatGPT, Zapier, code, etc.)
+3. Walk them through connecting that method to the Descript API/MCP
+4. Help them write their first prompt or automation step
+
+**Example prompts that work well once connected:**
+
+- "Create a Descript project from this video URL and remove filler words"
+- "Add Studio Sound and captions to my latest project"
+- "Make a 60-second highlight reel from this interview"
+- "Write a script about [topic] and create a video from it"
+- "Transcribe this recording and translate it to Spanish"
+
+---
+
+## Resources
+
+- **Landing page:** https://descript.com/api
+- **API docs:** https://docs.descriptapi.com
+- **Help center:** https://help.descript.com — search "Descript API"
+- **Discord:** Community support and feedback
+- **Weekly Office Hours:** Live help and workflow demos — register at https://descript.com/api

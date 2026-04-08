@@ -29,6 +29,7 @@
           {
             "group": "Guides",
             "pages": [
+              "guides/ai-setup",
               "guides/mcp",
               "guides/cli",
               "guides/zapier",

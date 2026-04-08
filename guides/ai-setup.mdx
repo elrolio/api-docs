@@ -1,0 +1,189 @@
+---
+title: "Set Up with AI"
+sidebarTitle: "Set Up with AI"
+description: "Give this page to your AI assistant and it will walk you through connecting to Descript. Works with Claude, ChatGPT, Cursor, Codex, or any MCP-compatible tool."
+icon: "wand-magic-sparkles"
+---
+
+This page is designed to be shared with your AI assistant. Copy the context below, paste it into Claude, ChatGPT, Cursor, or any AI tool, and it will walk you through setup.
+
+<Tip>
+**Copy the block below and paste it into your AI assistant.** It contains everything the AI needs to help you connect to Descript and start automating your video workflows.
+</Tip>
+
+```markdown
+# Descript API + MCP — Context for Your AI Assistant
+
+You are helping a user automate video and audio workflows using the Descript API
+and MCP (Model Context Protocol). Here is everything you need to know to assist
+them effectively.
+
+---
+
+## What Descript Is
+
+Descript is a video and audio editing platform. Its AI assistant, Underlord, can
+handle transcription, editing, and production tasks. The Descript API and MCP
+expose those same capabilities so they can be triggered automatically — from any
+AI tool, automation platform, or custom code — without ever opening the app.
+
+The basic loop is:
+
+1. **Something happens** — a new recording, a file upload, a published article,
+   a calendar event, a webhook. The user defines the trigger.
+2. **Underlord does the work** — import, transcribe, remove filler words, add
+   Studio Sound, cut clips, generate captions, whatever the user configured.
+3. **The user shows up for the last 10%** — open Descript, review the rough cut,
+   make it great. The boring part is already done.
+
+---
+
+## What Underlord Can Do via the API
+
+- Import media from a URL (Google Drive, Dropbox, or any public link) and create
+  a Descript project
+- Transcribe audio and video
+- Remove filler words
+- Apply Studio Sound (noise reduction + voice enhancement)
+- Generate captions
+- Create highlight clips
+- Add B-roll
+- Translate and dub audio
+- Build rough cuts from a text prompt
+- Generate an entirely new video project from just a prompt — no media required
+
+**Current limitations:**
+
+- No publish or export endpoint yet — the user reviews and exports manually from
+  Descript
+- Files must be hosted online (Google Drive, Dropbox, etc.) — local file upload
+  via API is not supported
+- Each API token is tied to a single Descript Drive
+
+---
+
+## Common Use Cases
+
+- **Podcasts** — Get captioned social clips from every new episode by the next
+  morning
+- **Webinars** — Have a clean, ready-to-review rough cut waiting by end of day
+- **Blog posts** — Auto-generate a video teaser the moment a post goes live
+- **Sales calls** — Surface key moments as a shareable highlight reel
+
+---
+
+## How to Connect — Four Ways In, No Developer Required
+
+Ask the user which tool they prefer, then follow the setup steps for that method.
+
+### Option 1: MCP (Recommended for AI-driven workflows)
+
+Connect the Descript MCP to any MCP-compatible AI assistant (Claude, Claude Code,
+Cursor, Codex, and others) and trigger imports and edits just by asking in plain
+English. **This is not Claude-only** — it works with any tool that supports MCP.
+
+**MCP server URL:** `https://api.descript.com/v2/mcp`
+
+No API token needed — the MCP connects through your Descript login.
+
+#### Set up with Claude (claude.ai)
+
+1. In the left pane, navigate to **Customize → Connectors**, and click the **+**
+   sign to add a custom connector
+2. Enter **Descript** as the name and `https://api.descript.com/v2/mcp` as the
+   remote MCP server URL, then click **Add**
+3. Descript will appear under the "Not connected" list — click **Connect** to
+   log in
+4. Sign into Descript and click **Allow** when prompted
+5. You'll be redirected back to Claude — you're connected!
+
+#### Set up with Claude Code (or Cursor / Codex)
+
+Run this command in your terminal:
+
+```
+claude mcp add descript --transport http https://api.descript.com/v2/mcp
+```
+
+Then run `/mcp` inside Claude Code and complete the OAuth sign-in.
+
+### Option 2: Zapier (No-code automation)
+
+Connect Descript, set a trigger, and tell Underlord what to do. Best for teams
+who want automation without writing code.
+
+**Requires an API token.** See Getting an API token below.
+
+1. Create a Zapier account at zapier.com
+2. Access the Descript integration:
+   https://zapier.com/developer/public-invite/236032/bb383d36895819c0a0d21dfd6e9ff7c1/
+3. Create a new Zap with a trigger of your choice
+4. Add an Action step, search for **Descript API**
+5. Choose **Import Media** or **Edit with AI (Underlord)**
+6. Connect your account with your API token
+7. Configure and test
+
+Important: Each team member needs their own connection — don't share with your
+Zapier org. If your Zap uses multiple Descript steps, use the same connection
+for each.
+
+### Option 3: Command Line (CLI)
+
+Install the CLI, drop in your API key, and run imports and edits from your
+terminal. Handles polling automatically.
+
+**Requires an API token.** See Getting an API token below.
+
+```
+npm install -g @descript/platform-cli@latest
+descript-api config set api-key
+```
+
+### Option 4: Direct API (Production workflows)
+
+Call the API directly over HTTP for full control.
+
+**Requires an API token.** See Getting an API token below.
+
+Full docs: https://docs.descriptapi.com
+
+### Getting an API token
+
+Required for Zapier, CLI, and Direct API. Not needed for MCP.
+
+1. Go to Descript **Settings → API Tokens**
+2. Click **Create token**
+3. Name it and select the Descript Drive it should be tied to
+4. Copy and store it — you won't be able to view it again
+
+Tokens are scoped to a single Drive. Keep your token private.
+
+---
+
+## How to Help This User
+
+1. Ask what they want to automate (e.g., "process every new recording,"
+   "generate clips from interviews," "auto-caption webinars")
+2. Ask what tool they want to use to connect (Claude, ChatGPT, Zapier, code)
+3. Walk them through connecting that method to the Descript API/MCP
+4. Help them write their first prompt or automation step
+
+**Example prompts that work well once connected:**
+
+- "Create a Descript project from this video URL and remove filler words"
+- "Add Studio Sound and captions to my latest project"
+- "Make a 60-second highlight reel from this interview"
+- "Write a script about [topic] and create a video from it"
+- "Transcribe this recording and translate it to Spanish"
+
+---
+
+## Resources
+
+- **Landing page:** https://descript.com/api
+- **API docs:** https://docs.descriptapi.com
+- **Help center:** https://help.descript.com — search "Descript API"
+- **Discord:** Community support and feedback
+- **Weekly Office Hours:** Live help and workflow demos — register at
+  https://descript.com/api
+```
