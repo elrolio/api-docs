@@ -132,5 +132,10 @@
       "x": "https://x.com/Descript",
       "discord": "https://discord.gg/descript"
     }
+  },
+  "seo": {
+    "metatags": {
+      "robots": "noindex, nofollow"
+    }
   }
 }
