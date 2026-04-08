@@ -161,4 +161,4 @@ Required for Zapier, CLI, and Direct API. Not needed for MCP via AI assistants.
 - **API docs:** https://docs.descriptapi.com
 - **Help center:** https://help.descript.com — search "Descript API"
 - **Discord:** Community support and feedback
-- **Weekly Office Hours:** Live help and workflow demos — register at https://descript.com/api
+- **Weekly Office Hours:** Live help and workflow demos — https://www.youtube.com/@Descript/streams
