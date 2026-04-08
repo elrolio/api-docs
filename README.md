@@ -1,14 +1,10 @@
-# Mintlify Starter Kit
+# Descript API Docs - Staging Test
 
-Use the starter kit to get your docs deployed and ready to customize.
+This is a github repo that feeds a staging mintlify site: https://revo-3b497026.mintlify.app/
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+It's really easy to update, and is natively LLM-readable. This staging example is all text and code snippets. No image or video assets yet. 
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+The rest of the below info is from mintlify itself:
 
 **[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
 
